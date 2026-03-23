@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weakness Dex</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d0d0f;--surface:#17171a;--surface2:#1f1f24;--surface3:#26262c;
+    --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+    --text:#f0f0f0;--muted:#555;--muted2:#888;--accent:#e8e840;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:48px 24px 80px;}
+  h1{font-family:'Press Start 2P',monospace;font-size:13px;color:var(--accent);letter-spacing:.05em;margin-bottom:8px;}
+  .sub{font-size:13px;color:var(--muted2);margin-bottom:32px;}
+  .main-col{width:100%;max-width:960px;}
+
+  /* Search */
+  .top-bar{display:flex;gap:10px;align-items:center;margin-bottom:10px;}
+  .search-wrap{position:relative;flex:1;}
+  input[type=text]{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;padding:13px 16px;outline:none;transition:border-color .2s;}
+  input[type=text]:focus{border-color:var(--accent);}
+  input[type=text]::placeholder{color:var(--muted);}
+  .dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:10px;overflow:hidden;z-index:200;display:none;max-height:320px;overflow-y:auto;}
+  .dropdown.open{display:block;}
+  .dd-item{display:flex;align-items:center;gap:10px;padding:7px 14px;font-size:14px;cursor:pointer;text-transform:capitalize;color:var(--text);transition:background .1s;}
+  .dd-item:hover,.dd-item.active{background:var(--surface2);}
+  .dd-sprite{width:36px;height:36px;flex-shrink:0;image-rendering:pixelated;background:var(--surface2);border-radius:6px;display:flex;align-items:center;justify-content:center;}
+  .dd-sprite img{width:36px;height:36px;image-rendering:pixelated;}
+  .dd-name{flex:1;}
+  .dd-types{display:flex;gap:3px;}
+  .dd-type-dot{width:8px;height:8px;border-radius:50%;}
+
+  /* Advanced */
+  .adv-toggle-btn{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border);color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:12px;border-radius:10px;padding:13px 14px;cursor:pointer;white-space:nowrap;transition:color .15s,border-color .15s;}
+  .adv-toggle-btn:hover{color:var(--text);border-color:var(--border2);}
+  .adv-toggle-btn .chevron{font-size:9px;transition:transform .2s;display:inline-block;}
+  .adv-toggle-btn.open .chevron{transform:rotate(90deg);}
+  .advanced-panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:20px;display:none;}
+  .advanced-panel.open{display:block;}
+  .adv-rows{display:flex;gap:16px;flex-wrap:wrap;}
+  .adv-row{display:flex;align-items:center;gap:8px;}
+  .adv-label{font-size:12px;color:var(--muted2);}
+  select{background:var(--surface2);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 9px;outline:none;cursor:pointer;}
+  select:focus{border-color:var(--accent);}
+
+  /* Feed */
+  #feed{display:flex;flex-direction:column;gap:12px;}
+  .poke-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:border-color .15s;}
+  .poke-card.is-history{cursor:pointer;}
+  .poke-card.is-history:hover{border-color:var(--border2);}
+  .poke-card.is-current{border-color:rgba(232,232,64,.18);}
+
+  /* Current card hero */
+  .current-hero{display:grid;grid-template-columns:180px 1fr;min-height:0;}
+  .hero-left{display:flex;flex-direction:column;align-items:center;padding:24px 16px;background:var(--surface2);border-right:1px solid var(--border);gap:8px;}
+  .sprite-wrap{position:relative;display:inline-block;margin-bottom:4px;}
+  .poke-img-current{width:100px;height:100px;image-rendering:pixelated;display:block;}
+  .shiny-badge{position:absolute;bottom:-3px;right:-3px;font-size:8px;background:var(--surface);border:1px solid var(--border2);border-radius:4px;padding:2px 5px;color:var(--muted);font-family:'Press Start 2P',monospace;cursor:pointer;transition:color .15s,border-color .15s;user-select:none;}
+  .shiny-badge:hover,.shiny-badge.active{color:var(--accent);border-color:rgba(232,232,64,.4);}
+  .hero-num{font-size:11px;color:var(--muted2);}
+  .hero-name{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--text);text-transform:capitalize;text-align:center;line-height:1.7;}
+  .hero-types{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;}
+  .type-pill{padding:2px 9px;border-radius:999px;font-weight:600;text-transform:capitalize;letter-spacing:.02em;font-size:10px;}
+  .hero-abilities{width:100%;margin-top:6px;}
+  .hero-abilities-label{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted);letter-spacing:.06em;margin-bottom:7px;text-align:center;}
+  .ability-list{display:flex;flex-direction:column;gap:4px;width:100%;}
+  .ability-entry{position:relative;width:100%;}
+  .ability-pill{display:block;width:100%;text-align:center;padding:5px 8px;border-radius:7px;font-size:11px;font-weight:500;background:var(--surface3);border:1px solid var(--border2);color:var(--muted2);text-transform:capitalize;cursor:default;}
+  .ability-pill .ha-tag{font-size:8px;margin-left:4px;opacity:.55;font-family:'Press Start 2P',monospace;}
+  .ability-pill.relevant{color:var(--accent);border-color:rgba(232,232,64,.3);background:rgba(232,232,64,.05);}
+  .ability-pill.ha-border{border-style:dashed;}
+  .ability-tooltip-box{position:fixed;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;font-size:12px;color:var(--text);line-height:1.6;max-width:240px;z-index:9999;pointer-events:none;opacity:0;transition:opacity .15s;}
+  .ability-tooltip-box.visible{opacity:1;}
+
+  /* Right panel */
+  .hero-right{display:grid;grid-template-columns:1fr auto;min-width:0;}
+  .hero-weaknesses{padding:20px;min-width:0;border-right:1px solid var(--border);}
+  .hero-stats{padding:20px;width:180px;flex-shrink:0;}
+  .panel-label{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted2);letter-spacing:.06em;margin-bottom:14px;}
+  .weakness-block{margin-bottom:12px;}
+  .weakness-block:last-child{margin-bottom:0;}
+  .section-label{font-family:'Press Start 2P',monospace;font-size:7px;letter-spacing:.08em;margin-bottom:7px;}
+  .section-label.x4{color:#ff4444;}.section-label.x2{color:#ff9933;}
+  .section-label.x0{color:#66ccff;}.section-label.half{color:#88cc44;}.section-label.quarter{color:#44aa88;}
+  .badges{display:flex;flex-wrap:wrap;gap:5px;}
+  .badge{display:flex;align-items:center;gap:4px;border-radius:7px;font-weight:600;text-transform:capitalize;border:1px solid transparent;padding:5px 11px;font-size:12px;}
+  .badge.sm{padding:3px 8px;font-size:11px;}
+  .badge .mult{font-size:9px;opacity:.65;font-weight:400;}
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .col-label{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted2);letter-spacing:.06em;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+  .divider-h{border:none;border-top:1px solid var(--border);margin:10px 0;}
+  .stat-rows{display:flex;flex-direction:column;gap:8px;}
+  .stat-row{display:flex;flex-direction:column;gap:3px;}
+  .stat-top{display:flex;justify-content:space-between;align-items:baseline;}
+  .stat-name{font-size:10px;color:var(--muted2);}
+  .stat-val{font-size:12px;font-weight:600;color:var(--text);}
+  .stat-bar-track{height:5px;background:var(--surface2);border-radius:999px;overflow:hidden;}
+  .stat-bar-fill{height:100%;border-radius:999px;}
+  .stat-divider{border:none;border-top:1px solid var(--border);margin:4px 0;}
+  .stat-total{display:flex;justify-content:space-between;align-items:baseline;margin-top:2px;}
+  .stat-total-label{font-size:10px;color:var(--muted2);}
+  .stat-total-val{font-size:12px;font-weight:600;color:var(--accent);}
+
+  /* Action bar */
+  .card-action-bar{border-top:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .forms-label{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted2);letter-spacing:.06em;flex-shrink:0;}
+  .form-chip{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;background:var(--surface2);border:1px solid var(--border2);cursor:pointer;transition:border-color .15s,background .15s;font-size:12px;font-weight:500;text-transform:capitalize;color:var(--text);}
+  .form-chip:hover{background:var(--surface3);}
+  .form-chip.active{border-color:var(--accent);color:var(--accent);}
+  .form-chip img{width:28px;height:28px;image-rendering:pixelated;}
+  .form-chip .form-swap{font-size:10px;color:var(--muted2);margin-right:2px;}
+  .moves-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;background:var(--surface2);border:1px solid var(--border2);cursor:pointer;font-size:12px;font-weight:500;color:var(--muted2);transition:color .15s,border-color .15s;margin-left:auto;}
+  .moves-btn:hover{color:var(--text);border-color:var(--border2);}
+
+  /* Evo chain */
+  .evo-chain{border-top:1px solid var(--border);padding:16px 20px;}
+  .evo-label{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted2);margin-bottom:14px;letter-spacing:.06em;}
+  .evo-linear{display:flex;align-items:flex-start;gap:4px;flex-wrap:wrap;}
+  .evo-arrow-wrap{display:flex;flex-direction:column;align-items:center;gap:3px;padding-top:14px;}
+  .evo-arrow{color:var(--muted);font-size:12px;flex-shrink:0;}
+  .evo-condition{font-size:10px;color:var(--muted2);white-space:nowrap;background:var(--surface2);padding:2px 6px;border-radius:4px;border:1px solid var(--border);}
+  .evo-grid{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .evo-grid-arrow{color:var(--muted);font-size:18px;flex-shrink:0;}
+  .evo-grid-branches{display:grid;gap:6px;}
+  .evo-mon{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:6px 8px;border-radius:10px;border:1px solid transparent;transition:border-color .15s,background .15s;min-width:64px;}
+  .evo-mon:hover{background:var(--surface2);border-color:var(--border2);}
+  .evo-mon.current{border-color:var(--accent);background:rgba(232,232,64,.04);}
+  .evo-mon img{width:48px;height:48px;image-rendering:pixelated;}
+  .evo-mon .evo-name{font-size:9px;color:var(--muted2);text-transform:capitalize;text-align:center;}
+  .evo-mon .evo-type{font-size:8px;font-weight:600;padding:1px 6px;border-radius:999px;text-transform:capitalize;margin-top:1px;}
+  .evo-mon .evo-cond{font-size:9px;color:var(--muted);text-align:center;margin-top:1px;font-style:italic;max-width:72px;line-height:1.3;}
+  .evo-from{display:flex;align-items:center;gap:8px;}
+  .evo-from-label{font-size:11px;color:var(--muted2);}
+
+  /* History */
+  .history-inner{display:flex;align-items:center;gap:14px;padding:12px 16px;}
+  .poke-img-small{width:48px;height:48px;image-rendering:pixelated;display:block;flex-shrink:0;}
+  .history-meta{flex:1;min-width:0;}
+  .history-top{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;}
+  .history-num{font-size:10px;color:var(--muted2);flex-shrink:0;}
+  .history-name{font-family:'Press Start 2P',monospace;font-size:9px;text-transform:capitalize;line-height:1.5;flex-shrink:0;}
+  .history-types{display:flex;gap:4px;flex-wrap:wrap;}
+  .history-weaknesses{display:flex;flex-wrap:wrap;gap:3px;}
+
+  /* Moves overlay */
+  .moves-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;}
+  .moves-modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:720px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;}
+  .moves-modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
+  .moves-modal-title{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--text);text-transform:capitalize;}
+  .moves-close{background:none;border:none;color:var(--muted2);font-size:20px;cursor:pointer;padding:0 4px;line-height:1;transition:color .15s;}
+  .moves-close:hover{color:var(--text);}
+  .moves-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;}
+  .moves-tab{padding:10px 16px;font-size:12px;font-weight:500;color:var(--muted2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s;margin-bottom:-1px;}
+  .moves-tab:hover{color:var(--text);}
+  .moves-tab.active{color:var(--text);border-bottom-color:var(--accent);}
+  .moves-body{overflow-y:auto;flex:1;}
+  .moves-loading{display:flex;justify-content:center;padding:40px;}
+  .moves-loading::after{content:'';width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+  .moves-table{width:100%;border-collapse:collapse;}
+  .moves-table th{position:sticky;top:0;background:var(--surface);font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted2);letter-spacing:.06em;padding:10px 16px;text-align:left;border-bottom:1px solid var(--border);}
+  .moves-table td{padding:8px 16px;font-size:12px;border-bottom:1px solid var(--border);color:var(--text);}
+  .moves-table tr:last-child td{border-bottom:none;}
+  .moves-table tr:hover td{background:var(--surface2);}
+  .move-level{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--muted2);}
+  .move-cat{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;}
+  .move-cat.physical{background:rgba(200,80,40,.2);color:#e06040;}
+  .move-cat.special{background:rgba(40,100,200,.2);color:#4090e0;}
+  .move-cat.status{background:rgba(120,120,120,.2);color:#aaa;}
+  .move-power{font-weight:600;}
+  .moves-empty{padding:32px;text-align:center;color:var(--muted2);font-size:13px;}
+
+  .spinner{display:flex;justify-content:center;padding:32px 0;}
+  .spinner::after{content:'';width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .error-msg{text-align:center;color:#ff6666;font-size:13px;padding:12px 0;}
+  .empty-hint{font-size:11px;color:var(--muted);font-style:italic;}
+  .footer{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--muted);margin-top:48px;text-align:center;line-height:2.2;}
+
+  @media(max-width:700px){
+    body{padding:20px 12px 60px;}
+    .current-hero{grid-template-columns:1fr;}
+    .hero-left{flex-direction:row;align-items:center;padding:14px 16px;border-right:none;border-bottom:1px solid var(--border);gap:14px;}
+    .hero-left .sprite-wrap{margin-bottom:0;flex-shrink:0;}
+    .poke-img-current{width:72px;height:72px;}
+    .hero-num,.hero-name{text-align:left;}
+    .hero-types{justify-content:flex-start;}
+    .hero-abilities-label{text-align:left;}
+    .hero-right{grid-template-columns:1fr;}
+    .hero-weaknesses{border-right:none;border-bottom:1px solid var(--border);}
+    .hero-stats{width:100%;}
+    .twocol{grid-template-columns:1fr;}
+    .evo-grid{flex-wrap:wrap;}
+    .moves-modal{max-height:90vh;}
+  }
+</style>
+</head>
+<body>
+<h1>WEAKNESS DEX</h1>
+<p class="sub">Type a Pokémon name to see its weaknesses</p>
+<div class="ability-tooltip-box" id="ability-tooltip"></div>
+
+<div class="moves-overlay" id="moves-overlay" style="display:none" onclick="closeMoves(event)">
+  <div class="moves-modal" onclick="event.stopPropagation()">
+    <div class="moves-modal-header">
+      <span class="moves-modal-title" id="moves-title">Moves</span>
+      <button class="moves-close" onclick="closeMoves()">×</button>
+    </div>
+    <div class="moves-tabs" id="moves-tabs"></div>
+    <div class="moves-body" id="moves-body"><div class="moves-loading"></div></div>
+  </div>
+</div>
+
+<div class="main-col">
+  <div class="top-bar">
+    <div class="search-wrap">
+      <input type="text" id="inp" placeholder="e.g. poochyena, charizard…" autocomplete="off" spellcheck="false"/>
+      <div class="dropdown" id="dropdown"></div>
+    </div>
+    <button class="adv-toggle-btn" id="adv-btn" onclick="toggleAdvanced()"><span class="chevron">▶</span> Advanced</button>
+  </div>
+  <div class="advanced-panel" id="adv-panel">
+    <div class="adv-rows">
+      <div class="adv-row">
+        <span class="adv-label">Generation</span>
+        <select id="gen-select" onchange="setGen(this.value)">
+          <option value="0">Latest (Gen 9)</option>
+          <option value="1">Gen 1</option><option value="2">Gen 2</option><option value="3">Gen 3</option>
+          <option value="4">Gen 4</option><option value="5">Gen 5</option><option value="6">Gen 6</option>
+          <option value="7">Gen 7</option><option value="8">Gen 8</option><option value="9">Gen 9</option>
+        </select>
+      </div>
+      <div class="adv-row">
+        <span class="adv-label">Ability override</span>
+        <select id="ability-select" onchange="setAbilityOverride(this.value)">
+          <option value="">— none —</option>
+          <option value="levitate">Levitate</option><option value="flash-fire">Flash Fire</option>
+          <option value="volt-absorb">Volt Absorb</option><option value="water-absorb">Water Absorb</option>
+          <option value="storm-drain">Storm Drain</option><option value="earth-eater">Earth Eater</option>
+          <option value="dry-skin">Dry Skin</option><option value="sap-sipper">Sap Sipper</option>
+          <option value="motor-drive">Motor Drive</option><option value="lightning-rod">Lightning Rod</option>
+          <option value="well-baked-body">Well-Baked Body</option><option value="wind-rider">Wind Rider</option>
+          <option value="purifying-salt">Purifying Salt</option><option value="heatproof">Heatproof</option>
+          <option value="thick-fat">Thick Fat</option><option value="wonder-guard">Wonder Guard</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div id="search-error"></div>
+  <div id="feed"></div>
+</div>
+
+<p class="footer">powered by <a href="https://pokeapi.co" style="color:var(--accent);text-decoration:none" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">PokéAPI</a></p>
+
+<script>
+const TC={normal:{bg:'#6b6b5e',text:'#e8e8d8'},fire:{bg:'#c0521a',text:'#ffe8d0'},water:{bg:'#1a4fa0',text:'#d0e8ff'},electric:{bg:'#b89000',text:'#fff8c0'},grass:{bg:'#2d7a2d',text:'#d0f0d0'},ice:{bg:'#2a8888',text:'#c8f0f0'},fighting:{bg:'#8a1a1a',text:'#ffd8d8'},poison:{bg:'#6a1a8a',text:'#f0d0ff'},ground:{bg:'#8a6a10',text:'#fff0c0'},flying:{bg:'#4a3a9a',text:'#e0d8ff'},psychic:{bg:'#a01a5a',text:'#ffd0e8'},bug:{bg:'#4a5a10',text:'#e8f0b0'},rock:{bg:'#6a5a18',text:'#f0e8c0'},ghost:{bg:'#3a2a6a',text:'#ddd0ff'},dragon:{bg:'#2a0a9a',text:'#d0c8ff'},dark:{bg:'#2a2018',text:'#d8d0c0'},steel:{bg:'#3a3a5a',text:'#d8d8f0'},fairy:{bg:'#902050',text:'#ffd0e0'}};
+
+const typeChart={normal:{rock:0.5,ghost:0,steel:0.5},fire:{fire:0.5,water:0.5,rock:0.5,dragon:0.5,grass:2,ice:2,bug:2,steel:2},water:{water:0.5,grass:0.5,dragon:0.5,fire:2,ground:2,rock:2},electric:{electric:0.5,grass:0.5,ground:0,dragon:0.5,flying:2,water:2},grass:{fire:0.5,grass:0.5,poison:0.5,flying:0.5,bug:0.5,dragon:0.5,steel:0.5,water:2,ground:2,rock:2,ice:2},ice:{fire:0.5,water:0.5,ice:0.5,steel:0.5,fighting:2,rock:2},fighting:{bug:0.5,rock:2,steel:2,ice:2,dark:2,normal:2,ghost:0,flying:0.5,poison:0.5,psychic:0.5,fairy:0.5},poison:{grass:2,fairy:2,poison:0.5,ground:0.5,rock:0.5,ghost:0.5,steel:0},ground:{poison:2,rock:2,steel:2,fire:2,electric:2,grass:0.5,bug:0.5,water:2,ice:2,flying:0},flying:{electric:2,ice:2,rock:2,grass:2,bug:2,fighting:2,ground:0},psychic:{psychic:0.5,fighting:2,ghost:2,dark:2,steel:0.5},bug:{fire:0.5,flying:0.5,rock:0.5,ghost:0.5,steel:0.5,fighting:0.5,grass:2},rock:{normal:2,fire:2,flying:2,ice:2,bug:2,fighting:0.5,ground:0.5,steel:0.5},ghost:{normal:0,fighting:0,ghost:2,dark:2,poison:0.5,bug:0.5},dragon:{ice:2,dragon:2,fairy:2,fire:0.5,water:0.5,grass:0.5,electric:0.5},dark:{ghost:2,psychic:2,dark:0.5,fighting:0.5,fairy:0.5,bug:2},steel:{fire:2,fighting:2,ground:2,normal:0.5,flying:0.5,rock:0.5,bug:0.5,grass:0.5,psychic:0.5,ice:0.5,dragon:0.5,fairy:0.5,poison:0,electric:0.5,steel:0.5},fairy:{fighting:2,dragon:0,dark:2,fire:0.5,poison:0.5,steel:0.5,bug:0.5}};
+
+const GEN_OVERRIDES={1:{fairy:null,dark:null,steel:null},2:{fairy:null},3:{fairy:null},4:{fairy:null},5:{fairy:null}};
+
+const GEN_VGS={1:['red-blue','yellow'],2:['gold-silver','crystal'],3:['ruby-sapphire','emerald','firered-leafgreen'],4:['diamond-pearl','platinum','heartgold-soulsilver'],5:['black-white','black-2-white-2'],6:['x-y','omega-ruby-alpha-sapphire'],7:['sun-moon','ultra-sun-ultra-moon'],8:['sword-shield','brilliant-diamond-and-shining-pearl'],9:['scarlet-violet']};
+
+const REL_ABILITIES={'levitate':{immune:['ground']},'flash-fire':{immune:['fire']},'volt-absorb':{immune:['electric']},'water-absorb':{immune:['water']},'storm-drain':{immune:['water']},'earth-eater':{immune:['ground']},'dry-skin':{immune:['water'],weak:['fire']},'sap-sipper':{immune:['grass']},'motor-drive':{immune:['electric']},'lightning-rod':{immune:['electric']},'well-baked-body':{immune:['fire']},'wind-rider':{immune:['flying']},'purifying-salt':{immune:['ghost']},'heatproof':{halve:['fire']},'thick-fat':{halve:['fire','ice']},'wonder-guard':{special:'wonderguard'}};
+
+const FORM_SUFFIXES=['-mega','-mega-x','-mega-y','-gmax','-primal','-origin','-therian','-black','-white','-resolute','-pirouette','-ash','-eternamax'];
+const FORM_LABELS={'-mega':'Mega','-mega-x':'Mega X','-mega-y':'Mega Y','-gmax':'G-Max','-primal':'Primal','-origin':'Origin','-therian':'Therian','-black':'Black','-white':'White','-resolute':'Resolute','-pirouette':'Pirouette','-ash':'Ash','-eternamax':'Eternamax'};
+
+const STAT_CONFIG=[{key:'hp',label:'HP',color:'#4caf50'},{key:'attack',label:'Atk',color:'#f44336'},{key:'defense',label:'Def',color:'#ff9800'},{key:'special-attack',label:'SpAtk',color:'#2196f3'},{key:'special-defense',label:'SpDef',color:'#9c27b0'},{key:'speed',label:'Speed',color:'#e91e63'}];
+const STAT_MAX=255;
+
+const MOVE_TABS=[{key:'level-up',label:'Level Up'},{key:'machine',label:'TM / HM'},{key:'egg',label:'Breeding'},{key:'tutor',label:'Tutor'},{key:'form-change',label:'Prior Evo'}];
+
+let allPokemon=[],ddIndex=-1,debounceTimer,currentGen=0,currentAbilityOverride='';
+const spriteCache={},abilityDescCache={},pokemonTypeCache={},moveDataCache={},varietiesCache={};
+let tooltipEnabledAt=0;
+const TOOLTIP_DELAY=600;
+let currentMovesData=null,currentMovesTab='level-up',currentAvailableTabs=[];
+
+function getHistory(){try{return JSON.parse(localStorage.getItem('wdex_h14')||'[]');}catch(e){return[];}}
+function saveToHistory(e){let h=getHistory().filter(x=>x.name!==e.name);h.unshift(e);localStorage.setItem('wdex_h14',JSON.stringify(h));}
+
+async function loadPokemonList(){
+  try{const r=await fetch('https://pokeapi.co/api/v2/pokemon?limit=1302');const d=await r.json();allPokemon=d.results.map(p=>p.name).filter(n=>!n.endsWith('-starter'));}catch(e){}
+}
+loadPokemonList();
+
+async function fetchPreview(name){
+  if(spriteCache[name])return spriteCache[name];
+  try{const r=await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);const d=await r.json();const data={sprite:d.sprites.front_default,types:d.types.map(t=>t.type.name)};spriteCache[name]=data;return data;}catch(e){return null;}
+}
+
+async function fetchPokemonTypes(name){
+  if(pokemonTypeCache[name])return pokemonTypeCache[name];
+  try{const r=await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);const d=await r.json();const data={sprite:d.sprites.front_default,types:d.types.map(t=>t.type.name)};pokemonTypeCache[name]=data;spriteCache[name]=data;return data;}catch(e){return null;}
+}
+
+async function fetchAbilityDesc(name){
+  if(abilityDescCache[name]!==undefined)return abilityDescCache[name];
+  try{
+    const r=await fetch(`https://pokeapi.co/api/v2/ability/${name}`);const d=await r.json();
+    const effect=d.effect_entries&&d.effect_entries.find(e=>e.language.name==='en');
+    if(effect){const desc=effect.short_effect||effect.effect||'';abilityDescCache[name]=desc;return desc;}
+    const flavor=d.flavor_text_entries&&d.flavor_text_entries.slice().reverse().find(e=>e.language.name==='en');
+    const desc=flavor?flavor.flavor_text.replace(/[\n\f]/g,' '):'No description available.';
+    abilityDescCache[name]=desc;return desc;
+  }catch(e){abilityDescCache[name]='No description available.';return'No description available.';}
+}
+
+async function fetchVarieties(pokemonId){
+  try{
+    const r=await fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemonId}`);
+    const d=await r.json();
+    const varieties=d.varieties.map(v=>v.pokemon.name);
+    for(const v of varieties)varietiesCache[v]=varieties;
+    return varieties;
+  }catch(e){return[];}
+}
+
+async function fetchMoveDetails(moveName){
+  if(moveDataCache[moveName])return moveDataCache[moveName];
+  try{const r=await fetch(`https://pokeapi.co/api/v2/move/${moveName}`);const d=await r.json();const data={type:d.type.name,category:d.damage_class.name,power:d.power,pp:d.pp,accuracy:d.accuracy};moveDataCache[moveName]=data;return data;}catch(e){return null;}
+}
+
+function getFormLabel(name){
+  for(const s of FORM_SUFFIXES){if(name.endsWith(s))return FORM_LABELS[s]||s.slice(1);}
+  const parts=name.split('-');
+  if(parts.length>1)return parts.slice(1).map(p=>p.charAt(0).toUpperCase()+p.slice(1)).join(' ');
+  return name;
+}
+
+function findAltForms(name){
+  if(varietiesCache[name])return varietiesCache[name].filter(v=>v!==name);
+  let base=name;
+  for(const s of FORM_SUFFIXES){if(name.endsWith(s)){base=name.slice(0,-(s.length));break;}}
+  return allPokemon.filter(n=>n!==name&&FORM_SUFFIXES.some(s=>n===base+s));
+}
+
+function getBaseName(name){
+  if(varietiesCache[name])return varietiesCache[name][0];
+  for(const s of FORM_SUFFIXES){if(name.endsWith(s))return name.slice(0,-(s.length));}
+  return name;
+}
+
+function isAltForm(name){
+  if(varietiesCache[name])return varietiesCache[name][0]!==name;
+  return FORM_SUFFIXES.some(s=>name.endsWith(s));
+}
+
+// Evo condition helpers
+function pickEvoDetail(details){
+  if(!details||!details.length)return null;
+  if(currentGen===0)return details[details.length-1];
+  const vgs=GEN_VGS[currentGen]||[];
+  const match=details.find(d=>d.version_group&&vgs.includes(d.version_group.name));
+  return match||details[0];
+}
+
+function formatEvoCondition(details){
+  if(!details||!details.length)return'';
+  const d=pickEvoDetail(details);
+  if(!d)return'';
+  const parts=[];
+  if(d.min_level)parts.push(`Lv. ${d.min_level}`);
+  if(d.item)parts.push(d.item.name.replace(/-/g,' '));
+  if(d.held_item)parts.push(`hold ${d.held_item.name.replace(/-/g,' ')}`);
+  if(d.known_move)parts.push(`know ${d.known_move.name.replace(/-/g,' ')}`);
+  if(d.known_move_type)parts.push(`${d.known_move_type.name} move`);
+  if(d.min_happiness)parts.push('friendship');
+  if(d.min_beauty)parts.push('beauty');
+  if(d.min_affection)parts.push('affection');
+  if(d.time_of_day==='day')parts.push('day');
+  if(d.time_of_day==='night')parts.push('night');
+  if(d.gender===1)parts.push('♀');
+  if(d.gender===2)parts.push('♂');
+  if(d.needs_overworld_rain)parts.push('rain');
+  if(d.turn_upside_down)parts.push('flip');
+  if(d.trade_species)parts.push(`trade for ${d.trade_species.name}`);
+  else if(d.trigger&&d.trigger.name==='trade')parts.push('trade');
+  if(d.location)parts.push(d.location.name.replace(/-/g,' '));
+  if(d.party_species)parts.push(`with ${d.party_species.name}`);
+  if(d.party_type)parts.push(`with ${d.party_type.name}-type`);
+  return parts.join(' · ')||'special';
+}
+
+// Type calculation
+function calcWeaknesses(types,abilityKey){
+  const et=types.map(t=>(currentGen>0&&GEN_OVERRIDES[currentGen]&&GEN_OVERRIDES[currentGen][t]===null)?'normal':t);
+  const am=abilityKey?REL_ABILITIES[abilityKey]:null;
+  const all={};
+  for(const t of Object.keys(TC))all[t]=1;
+  for(const atk of Object.keys(TC)){
+    let m=1;
+    if(am&&am.special==='wonderguard'){let b=1;for(const def of et){const row=typeChart[atk]||{};b*=row[def]!==undefined?row[def]:1;}all[atk]=b>1?b:0;continue;}
+    for(const def of et){const row=typeChart[atk]||{};m*=row[def]!==undefined?row[def]:1;}
+    if(am){if(am.immune&&am.immune.includes(atk))m=0;if(am.halve&&am.halve.includes(atk))m*=0.5;if(am.weak&&am.weak.includes(atk))m*=2;}
+    all[atk]=m;
+  }
+  return all;
+}
+
+function group(all){const w4=[],w2=[],imm=[],r2=[],r4=[];for(const[t,m]of Object.entries(all)){if(m===4)w4.push(t);else if(m===2)w2.push(t);else if(m===0)imm.push(t);else if(m===0.5)r2.push(t);else if(m===0.25)r4.push(t);}return{w4,w2,imm,r2,r4};}
+
+function badge(type,mult,sm=false){const c=TC[type]||{bg:'#444',text:'#eee'};return`<span class="badge${sm?' sm':''}" style="background:${c.bg};color:${c.text};border-color:${c.bg}AA">${type}<span class="mult">${mult}</span></span>`;}
+
+function renderGroups(g,sm=false){const{w4,w2,imm,r2,r4}=g;let html='';if(w4.length)html+=`<div class="weakness-block"><div class="section-label x4">WEAKNESS ×4</div><div class="badges">${w4.map(t=>badge(t,'×4',sm)).join('')}</div></div>`;if(w2.length)html+=`<div class="weakness-block"><div class="section-label x2">WEAKNESS ×2</div><div class="badges">${w2.map(t=>badge(t,'×2',sm)).join('')}</div></div>`;if((w4.length||w2.length)&&(imm.length||r2.length||r4.length))html+='<hr class="divider-h">';if(imm.length)html+=`<div class="weakness-block"><div class="section-label x0">IMMUNE ×0</div><div class="badges">${imm.map(t=>badge(t,'×0',sm)).join('')}</div></div>`;if(r2.length)html+=`<div class="weakness-block"><div class="section-label half">RESISTANT ×½</div><div class="badges">${r2.map(t=>badge(t,'×½',sm)).join('')}</div></div>`;if(r4.length)html+=`<div class="weakness-block"><div class="section-label quarter">RESISTANT ×¼</div><div class="badges">${r4.map(t=>badge(t,'×¼',sm)).join('')}</div></div>`;if(!html)html='<p class="empty-hint">No notable matchups</p>';return html;}
+
+function renderStats(stats){
+  if(!stats||!stats.length)return'';
+  let total=0;
+  let cfg=STAT_CONFIG;
+  if(currentGen===1){
+    cfg=[{key:'hp',label:'HP',color:'#4caf50'},{key:'attack',label:'Atk',color:'#f44336'},{key:'defense',label:'Def',color:'#ff9800'},{key:'special-attack',label:'Special',color:'#9c27b0'},{key:'speed',label:'Speed',color:'#e91e63'}];
+  }
+  const rows=cfg.map(sc=>{const s=stats.find(x=>x.stat.name===sc.key);const val=s?s.base_stat:0;total+=val;const pct=Math.round((val/STAT_MAX)*100);return`<div class="stat-row"><div class="stat-top"><span class="stat-name">${sc.label}</span><span class="stat-val">${val}</span></div><div class="stat-bar-track"><div class="stat-bar-fill" style="width:${pct}%;background:${sc.color}"></div></div></div>`;}).join('');
+  return`<div class="stat-rows">${rows}<hr class="stat-divider"><div class="stat-total"><span class="stat-total-label">Total</span><span class="stat-total-val">${total}</span></div></div>`;
+}
+
+// Tooltip
+const tooltipEl=document.getElementById('ability-tooltip');
+let tooltipHideTimer,tooltipShowTimer;
+function showTooltip(el,text){clearTimeout(tooltipHideTimer);tooltipEl.textContent=text;tooltipEl.classList.add('visible');positionTooltip(el);}
+function positionTooltip(el){const rect=el.getBoundingClientRect(),tw=240,th=tooltipEl.offsetHeight||60,vw=window.innerWidth;let left=rect.left+rect.width/2-tw/2,top=rect.top-th-8;if(top<8)top=rect.bottom+8;left=Math.max(8,Math.min(left,vw-tw-8));tooltipEl.style.left=left+'px';tooltipEl.style.top=top+'px';tooltipEl.style.width=tw+'px';}
+function hideTooltip(){clearTimeout(tooltipShowTimer);tooltipHideTimer=setTimeout(()=>tooltipEl.classList.remove('visible'),80);}
+function attachTooltipEvents(){
+  document.querySelectorAll('.ability-entry[data-ability]').forEach(el=>{
+    const name=el.dataset.ability;
+    el.addEventListener('mouseenter',async()=>{
+      if(Date.now()-tooltipEnabledAt<TOOLTIP_DELAY)return;
+      clearTimeout(tooltipHideTimer);
+      tooltipShowTimer=setTimeout(async()=>{let desc=abilityDescCache[name];if(desc===undefined){showTooltip(el,'Loading…');desc=await fetchAbilityDesc(name);}showTooltip(el,desc);},120);
+    });
+    el.addEventListener('mouseleave',hideTooltip);
+    el.addEventListener('mousemove',()=>{if(tooltipEl.classList.contains('visible'))positionTooltip(el);});
+  });
+}
+
+// Moves
+async function openMoves(pokemonName){
+  document.getElementById('moves-title').textContent=`${pokemonName} — moves`;
+  document.getElementById('moves-overlay').style.display='flex';
+  document.getElementById('moves-tabs').innerHTML='';
+  document.getElementById('moves-body').innerHTML='<div class="moves-loading"></div>';
+
+  if(!currentMovesData||currentMovesData.name!==pokemonName){
+    try{
+      const r=await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`);
+      const d=await r.json();
+      const byMethod={};
+      for(const m of d.moves){
+        for(const vg of m.version_group_details){
+          const method=vg.move_learn_method.name;
+          if(!byMethod[method])byMethod[method]=[];
+          const existing=byMethod[method].find(x=>x.name===m.move.name);
+          if(method==='level-up'){
+            if(!existing)byMethod[method].push({name:m.move.name,level:vg.level_learned_at});
+            else if(vg.level_learned_at>existing.level)existing.level=vg.level_learned_at;
+          } else {
+            if(!existing)byMethod[method].push({name:m.move.name,level:0});
+          }
+        }
+      }
+      if(byMethod['level-up'])byMethod['level-up'].sort((a,b)=>a.level-b.level);
+      for(const k of Object.keys(byMethod)){if(k!=='level-up')byMethod[k].sort((a,b)=>a.name.localeCompare(b.name));}
+      currentMovesData={name:pokemonName,byMethod};
+    }catch(e){document.getElementById('moves-body').innerHTML='<p class="moves-empty">Failed to load moves.</p>';return;}
+  }
+
+  currentAvailableTabs=MOVE_TABS.filter(t=>(currentMovesData.byMethod[t.key]||[]).length>0);
+  if(!currentAvailableTabs.length){document.getElementById('moves-body').innerHTML='<p class="moves-empty">No move data available.</p>';return;}
+  if(!currentAvailableTabs.find(t=>t.key===currentMovesTab))currentMovesTab=currentAvailableTabs[0].key;
+
+  renderMoveTabs(currentMovesTab);
+  renderMoveTable(currentMovesTab);
+
+  // Prefetch all move details in background
+  const allNames=[...new Set(Object.values(currentMovesData.byMethod).flat().map(m=>m.name))];
+  for(let i=0;i<allNames.length;i+=20){
+    Promise.all(allNames.slice(i,i+20).map(n=>fetchMoveDetails(n)));
+    await new Promise(r=>setTimeout(r,50));
+  }
+}
+
+function renderMoveTabs(activeTab){
+  document.getElementById('moves-tabs').innerHTML=currentAvailableTabs.map(t=>`<div class="moves-tab${t.key===activeTab?' active':''}" onclick="switchMoveTab('${t.key}')">${t.label}</div>`).join('');
+}
+
+function switchMoveTab(tab){currentMovesTab=tab;renderMoveTabs(tab);renderMoveTable(tab);}
+
+function renderMoveTable(tab){
+  if(!currentMovesData)return;
+  const body=document.getElementById('moves-body');
+  const filtered=currentMovesData.byMethod[tab]||[];
+  if(!filtered.length){body.innerHTML='<p class="moves-empty">No moves in this category.</p>';return;}
+
+  function buildTable(){
+    let html=`<table class="moves-table"><thead><tr>${tab==='level-up'?'<th>LV</th>':''}<th>MOVE</th><th>TYPE</th><th>CAT</th><th>PWR</th><th>ACC</th><th>PP</th></tr></thead><tbody>`;
+    for(const m of filtered){
+      const det=moveDataCache[m.name]||{};
+      const mc=TC[det.type]||{bg:'#555',text:'#aaa'};
+      const catCls=det.category==='physical'?'physical':det.category==='special'?'special':'status';
+      html+=`<tr>${tab==='level-up'?`<td><span class="move-level">${m.level||'—'}</span></td>`:''}<td style="text-transform:capitalize">${m.name.replace(/-/g,' ')}</td><td>${det.type?`<span style="background:${mc.bg};color:${mc.text};padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600">${det.type}</span>`:'—'}</td><td>${det.category?`<span class="move-cat ${catCls}">${det.category}</span>`:'—'}</td><td class="move-power">${det.power||'—'}</td><td>${det.accuracy||'—'}</td><td>${det.pp||'—'}</td></tr>`;
+    }
+    html+='</tbody></table>';
+    return html;
+  }
+
+  body.innerHTML=buildTable();
+  const uncached=filtered.filter(m=>!moveDataCache[m.name]);
+  if(uncached.length){
+    Promise.all(uncached.map(m=>fetchMoveDetails(m.name))).then(()=>{if(currentMovesTab===tab)body.innerHTML=buildTable();});
+  }
+}
+
+function closeMoves(e){if(!e||e.target===document.getElementById('moves-overlay'))document.getElementById('moves-overlay').style.display='none';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('moves-overlay').style.display='none';});
+
+// Build abilities HTML
+function buildAbilitiesHtml(abilities){
+  if(!abilities||!abilities.length)return'';
+  const pills=abilities.map(a=>{const isR=!!REL_ABILITIES[a.name];const haTag=a.is_hidden?'<span class="ha-tag">HA</span>':'';let cls='ability-pill'+(isR?' relevant':'')+(a.is_hidden?' ha-border':'');return`<div class="ability-entry" data-ability="${a.name}"><span class="${cls}">${a.name.replace(/-/g,' ')}${haTag}</span></div>`;}).join('');
+  return`<div class="hero-abilities"><div class="hero-abilities-label">ABILITIES</div><div class="ability-list">${pills}</div></div>`;
+}
+
+// Build current card
+function buildCurrentCard(entry){
+  const{name,id,sprite,shiny,shiny_sprite,types,abilities,stats}=entry;
+  const num=String(id).padStart(4,'0');
+  const activeSprite=shiny?shiny_sprite:sprite;
+  const typePills=types.map(t=>{const c=TC[t]||{bg:'#444',text:'#eee'};return`<span class="type-pill" style="background:${c.bg};color:${c.text}">${t}</span>`;}).join('');
+  const abilityKey=currentAbilityOverride||(abilities?(abilities.find(a=>REL_ABILITIES[a.name])||{}).name:null);
+  const defaultG=group(calcWeaknesses(types,null));
+  const hasTwoCol=!!abilityKey;
+  const abilityG=hasTwoCol?group(calcWeaknesses(types,abilityKey)):null;
+  const weaknessHtml=hasTwoCol?`<div class="twocol"><div><div class="col-label">DEFAULT</div>${renderGroups(defaultG)}</div><div><div class="col-label">WITH ${abilityKey.replace(/-/g,' ').toUpperCase()}</div>${renderGroups(abilityG)}</div></div>`:renderGroups(defaultG);
+  const statsHtml=renderStats(stats);
+
+  // Forms bar
+  const altForms=findAltForms(name);
+  const isAlt=isAltForm(name);
+  const base=getBaseName(name);
+  let actionBarHtml='';
+  if(altForms.length||isAlt){
+    const allForms=isAlt?findAltForms(base):altForms;
+    const baseData=spriteCache[base]||{};
+    const baseImg=baseData.sprite?`<img src="${baseData.sprite}" />`:'';
+    let chips=`<div class="form-chip${!isAlt?' active':''}" onclick="lookup('${base}')"><span class="form-swap">⇄</span>${baseImg}Base</div>`;
+    chips+=allForms.map(f=>{const fd=spriteCache[f]||{};const fi=fd.sprite?`<img src="${fd.sprite}" />`:'';return`<div class="form-chip${f===name?' active':''}" onclick="lookup('${f}')"><span class="form-swap">⇄</span>${fi}${getFormLabel(f)}</div>`;}).join('');
+    [base,...allForms].forEach(async f=>{if(spriteCache[f]&&spriteCache[f].sprite)return;const data=await fetchPreview(f);if(!data)return;document.querySelectorAll(`.form-chip[onclick="lookup('${f}')"]`).forEach(chip=>{if(!chip.querySelector('img')&&data.sprite)chip.insertAdjacentHTML('afterbegin',`<img src="${data.sprite}" style="width:28px;height:28px;image-rendering:pixelated" />`);});});
+    actionBarHtml=`<div class="card-action-bar"><span class="forms-label">FORMS</span>${chips}<button class="moves-btn" onclick="openMoves('${name}')">📋 Moves</button></div>`;
+  } else {
+    actionBarHtml=`<div class="card-action-bar"><button class="moves-btn" onclick="openMoves('${name}')">📋 Moves</button></div>`;
+  }
+
+  return`<div class="poke-card is-current" id="card-current">
+    <div class="current-hero">
+      <div class="hero-left">
+        <div class="sprite-wrap"><img class="poke-img-current" id="current-sprite" src="${activeSprite||''}" alt="${name}"/><span class="shiny-badge${shiny?' active':''}" id="shiny-toggle" onclick="toggleShiny('${name}')">✦</span></div>
+        <div class="hero-num">#${num}</div>
+        <div class="hero-name">${name}</div>
+        <div class="hero-types">${typePills}</div>
+        ${buildAbilitiesHtml(abilities)}
+      </div>
+      <div class="hero-right">
+        <div class="hero-weaknesses"><div class="panel-label">WEAKNESSES</div>${weaknessHtml}</div>
+        <div class="hero-stats"><div class="panel-label">BASE STATS</div>${statsHtml}</div>
+      </div>
+    </div>
+    ${actionBarHtml}
+    <div id="evo-wrap"></div>
+  </div>`;
+}
+
+function buildHistoryCard(entry){
+  const{name,id,sprite,types,abilities}=entry;
+  const num=String(id).padStart(4,'0');
+  const typePills=types.map(t=>{const c=TC[t]||{bg:'#444',text:'#eee'};return`<span class="type-pill" style="background:${c.bg};color:${c.text}">${t}</span>`;}).join('');
+  const abilityKey=currentAbilityOverride||(abilities?(abilities.find(a=>REL_ABILITIES[a.name])||{}).name:null);
+  const g=group(calcWeaknesses(types,abilityKey||null));
+  const weakBadges=[...g.w4.map(t=>badge(t,'×4',true)),...g.w2.map(t=>badge(t,'×2',true))];
+  return`<div class="poke-card is-history" onclick="bringToTop('${name}')"><div class="history-inner"><img class="poke-img-small" src="${sprite||''}" alt="${name}"/><div class="history-meta"><div class="history-top"><span class="history-num">#${num}</span><span class="history-name">${name}</span><div class="history-types">${typePills}</div></div>${weakBadges.length?`<div class="history-weaknesses">${weakBadges.join('')}</div>`:''}</div></div></div>`;
+}
+
+function renderFeed(){
+  const history=getHistory();const feed=document.getElementById('feed');
+  if(!history.length){feed.innerHTML='';return;}
+  feed.innerHTML=buildCurrentCard(history[0])+history.slice(1).map(e=>buildHistoryCard(e)).join('');
+  attachTooltipEvents();
+  loadEvoChain(history[0]);
+}
+
+function toggleShiny(name){
+  const h=getHistory();const idx=h.findIndex(e=>e.name===name);if(idx<0)return;
+  h[idx].shiny=!h[idx].shiny;localStorage.setItem('wdex_h14',JSON.stringify(h));
+  const entry=h[idx];
+  const sp=document.getElementById('current-sprite');const bg=document.getElementById('shiny-toggle');
+  if(sp)sp.src=entry.shiny?entry.shiny_sprite:entry.sprite;
+  if(bg)bg.classList.toggle('active',entry.shiny);
+}
+
+// Evo chain
+function evoMonEl(name,spriteUrl,types,isCurrent,condition){
+  const img=spriteUrl?`<img src="${spriteUrl}"/>`:`<div style="width:48px;height:48px;background:var(--surface2);border-radius:50%"></div>`;
+  const tp=types&&types[0]?`<span class="evo-type" style="background:${(TC[types[0]]||{bg:'#444'}).bg};color:${(TC[types[0]]||{text:'#eee'}).text}">${types[0]}</span>`:'';
+  const cond=condition?`<span class="evo-cond">${condition}</span>`:'';
+  return`<div class="evo-mon${isCurrent?' current':''}" onclick="lookup('${name}')">${img}<span class="evo-name">${name}</span>${tp}${cond}</div>`;
+}
+
+function walkChain(node){if(!node)return null;return{name:node.species.name,evo_details:node.evolution_details||[],children:(node.evolves_to||[]).map(walkChain).filter(Boolean)};}
+
+async function loadEvoChain(entry){
+  const wrap=document.getElementById('evo-wrap');if(!wrap)return;
+  try{
+    const sr=await fetch(`https://pokeapi.co/api/v2/pokemon-species/${entry.id}`);
+    const sd=await sr.json();
+    const er=await fetch(sd.evolution_chain.url);const ed=await er.json();
+    const tree=walkChain(ed.chain);if(!tree)return;
+    function allNames(node){return[node.name,...node.children.flatMap(allNames)];}
+    await Promise.all([...new Set(allNames(tree))].map(n=>fetchPokemonTypes(n)));
+    const currentName=entry.name;
+
+    function findBranchingAncestor(node,target,ancestor){
+      if(node.children.length>1)ancestor=node.name;
+      if(node.name===target)return ancestor;
+      for(const c of node.children){const r=findBranchingAncestor(c,target,ancestor);if(r!==undefined)return r;}
+      return undefined;
+    }
+    function findNode(node,target){
+      if(node.name===target)return node;
+      for(const c of node.children){const r=findNode(c,target);if(r)return r;}
+      return null;
+    }
+
+    const isBranching=tree.children.length>1||(tree.children[0]&&tree.children[0].children.length>1);
+    const branchingAncestor=findBranchingAncestor(tree,currentName,null);
+    const isChildOfBranch=branchingAncestor&&branchingAncestor!==currentName;
+
+    let html='';
+
+    if(isChildOfBranch){
+      const aData=pokemonTypeCache[branchingAncestor]||{};
+      const curNode=findNode(tree,currentName);
+      const cond=formatEvoCondition(curNode?curNode.evo_details:[]);
+      html=`<div class="evo-from"><span class="evo-from-label">evolves from</span>${evoMonEl(branchingAncestor,aData.sprite,aData.types,false,'')}<span class="evo-arrow">→</span>${evoMonEl(currentName,(pokemonTypeCache[currentName]||{}).sprite,(pokemonTypeCache[currentName]||{}).types,true,cond)}</div>`;
+    } else if(isBranching){
+      function findBranchNode(node){if(node.children.length>1)return node;if(node.children[0])return findBranchNode(node.children[0]);return node;}
+      const branchNode=findBranchNode(tree);
+      const baseData=pokemonTypeCache[branchNode.name]||{};
+      const cols=Math.ceil(Math.sqrt(branchNode.children.length));
+      let preEvoHtml='';
+      if(branchNode.name!==tree.name){
+        const preData=pokemonTypeCache[tree.name]||{};
+        const preCond=formatEvoCondition(branchNode.evo_details);
+        preEvoHtml=evoMonEl(tree.name,preData.sprite,preData.types,tree.name===currentName,'')+`<div class="evo-arrow-wrap"><span class="evo-arrow">→</span>${preCond?`<span class="evo-condition">${preCond}</span>`:''}</div>`;
+      }
+      const branchTiles=branchNode.children.map(c=>{
+        const cData=pokemonTypeCache[c.name]||{};
+        const cond=formatEvoCondition(c.evo_details);
+        let tile=evoMonEl(c.name,cData.sprite,cData.types,c.name===currentName,cond);
+        if(c.children&&c.children[0]){const cc=c.children[0];const ccData=pokemonTypeCache[cc.name]||{};const ccCond=formatEvoCondition(cc.evo_details);tile=`<div style="display:flex;align-items:center;gap:4px">${tile}<span class="evo-arrow" style="font-size:10px">→</span>${evoMonEl(cc.name,ccData.sprite,ccData.types,cc.name===currentName,ccCond)}</div>`;}
+        return tile;
+      }).join('');
+      html=`<div class="evo-grid">${preEvoHtml}<div style="display:flex;flex-direction:column;align-items:center">${evoMonEl(branchNode.name,baseData.sprite,baseData.types,branchNode.name===currentName,'')}</div><span class="evo-grid-arrow">→</span><div class="evo-grid-branches" style="grid-template-columns:repeat(${cols},auto)">${branchTiles}</div></div>`;
+    } else {
+      function linearNodes(node){const arr=[node];let cur=node;while(cur.children&&cur.children[0]){cur=cur.children[0];arr.push(cur);}return arr;}
+      const path=linearNodes(tree);if(path.length<2)return;
+      const tiles=path.map((n,i)=>{const d=pokemonTypeCache[n.name]||{};const cond=i>0?formatEvoCondition(n.evo_details):'';return(i>0?`<div class="evo-arrow-wrap"><span class="evo-arrow">→</span>${cond?`<span class="evo-condition">${cond}</span>`:''}</div>`:'')+evoMonEl(n.name,d.sprite,d.types,n.name===currentName,'');}).join('');
+      html=`<div class="evo-linear">${tiles}</div>`;
+    }
+    wrap.innerHTML=`<div class="evo-chain"><div class="evo-label">EVOLUTION CHAIN</div>${html}</div>`;
+  }catch(e){}
+}
+
+function toggleAdvanced(){document.getElementById('adv-btn').classList.toggle('open');document.getElementById('adv-panel').classList.toggle('open');}
+function bringToTop(name){lookup(name);}
+function setGen(val){currentGen=parseInt(val);renderFeed();}
+function setAbilityOverride(val){currentAbilityOverride=val;renderFeed();}
+
+async function lookup(name){
+  name=(name||document.getElementById('inp').value).trim().toLowerCase();
+  if(!name)return;
+  closeDropdown();document.getElementById('inp').value='';document.getElementById('search-error').innerHTML='';
+  tooltipEnabledAt=Date.now();hideTooltip();
+  const feed=document.getElementById('feed');
+  const ld=document.createElement('div');ld.className='poke-card is-current';ld.innerHTML='<div class="spinner"></div>';feed.prepend(ld);
+  try{
+    const r=await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);if(!r.ok)throw new Error();
+    const d=await r.json();
+    const pdata={sprite:d.sprites.front_default,types:d.types.map(t=>t.type.name)};
+    spriteCache[d.name]=pdata;pokemonTypeCache[d.name]=pdata;
+    const entry={name:d.name,id:d.id,sprite:d.sprites.front_default,shiny_sprite:d.sprites.front_shiny,types:d.types.map(t=>t.type.name),abilities:d.abilities.map(a=>({name:a.ability.name,is_hidden:a.is_hidden})),stats:d.stats,shiny:false};
+    fetchVarieties(d.id);
+    saveToHistory(entry);ld.remove();renderFeed();
+  }catch(e){ld.remove();document.getElementById('search-error').innerHTML=`<p class="error-msg">Pokémon "${name}" not found. Check the spelling?</p>`;}
+}
+
+// Autocomplete
+const inp=document.getElementById('inp'),dd=document.getElementById('dropdown');
+async function updateDropdown(val){
+  const matches=allPokemon.filter(n=>n.includes(val)).slice(0,7);
+  if(!matches.length){closeDropdown();return;}
+  ddIndex=-1;
+  dd.innerHTML=matches.map((m,i)=>{const idx=m.indexOf(val);const hi=m.slice(0,idx)+`<strong style="color:var(--accent)">${m.slice(idx,idx+val.length)}</strong>`+m.slice(idx+val.length);const cached=spriteCache[m];const sh=cached&&cached.sprite?`<img src="${cached.sprite}"/>`:'';const td=cached?cached.types.map(t=>{const c=TC[t]||{bg:'#888'};return`<span class="dd-type-dot" style="background:${c.bg}"></span>`;}).join(''):'';return`<div class="dd-item" id="ddi-${i}" data-name="${m}"><div class="dd-sprite${cached?'':' loading'}" id="ddsprite-${i}">${sh}</div><span class="dd-name">${hi}</span><div class="dd-types">${td}</div></div>`;}).join('');
+  dd.classList.add('open');
+  dd.querySelectorAll('.dd-item').forEach(el=>el.addEventListener('mousedown',e=>{e.preventDefault();lookup(el.dataset.name);}));
+  matches.forEach(async(m,i)=>{if(spriteCache[m])return;const data=await fetchPreview(m);if(!data)return;const se=document.getElementById(`ddsprite-${i}`);const ie=document.getElementById(`ddi-${i}`);if(!se||!ie)return;se.classList.remove('loading');if(data.sprite)se.innerHTML=`<img src="${data.sprite}"/>`;const dw=ie.querySelector('.dd-types');if(dw)dw.innerHTML=data.types.map(t=>{const c=TC[t]||{bg:'#888'};return`<span class="dd-type-dot" style="background:${c.bg}"></span>`;}).join('');});
+}
+
+inp.addEventListener('input',()=>{clearTimeout(debounceTimer);const val=inp.value.trim().toLowerCase();if(!val){closeDropdown();return;}debounceTimer=setTimeout(()=>updateDropdown(val),150);});
+inp.addEventListener('keydown',e=>{const items=dd.querySelectorAll('.dd-item');if(e.key==='ArrowDown'){e.preventDefault();ddIndex=Math.min(ddIndex+1,items.length-1);items.forEach((el,i)=>el.classList.toggle('active',i===ddIndex));}else if(e.key==='ArrowUp'){e.preventDefault();ddIndex=Math.max(ddIndex-1,-1);items.forEach((el,i)=>el.classList.toggle('active',i===ddIndex));}else if(e.key==='Enter'){if(ddIndex>=0&&items[ddIndex])lookup(items[ddIndex].dataset.name);else lookup();}else if(e.key==='Escape')closeDropdown();});
+inp.addEventListener('blur',()=>setTimeout(closeDropdown,150));
+function closeDropdown(){dd.classList.remove('open');ddIndex=-1;}
+
+renderFeed();
+</script>
+</body>
+</html>

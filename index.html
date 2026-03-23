@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weakness Dex</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<h1>WEAKNESS DEX</h1>
+<p class="sub">Type a Pokémon nme to see its weaknesses</p>
+<div class="ability-tooltip-box" id="ability-tooltip"></div>
+
+<div class="moves-overlay" id="moves-overlay" style="display:none" onclick="closeMoves(event)">
+  <div class="moves-modal" onclick="event.stopPropagation()">
+    <div class="moves-modal-header">
+      <span class="moves-modal-title" id="moves-title">Moves</span>
+      <button class="moves-close" onclick="closeMoves()">×</button>
+    </div>
+    <div class="moves-tabs" id="moves-tabs"></div>
+    <div class="moves-body" id="moves-body"><div class="moves-loading"></div></div>
+  </div>
+</div>
+
+<div class="main-col">
+  <div class="top-bar">
+    <div class="search-wrap">
+      <input type="text" id="inp" placeholder="e.g. poochyena, charizard…" autocomplete="off" spellcheck="false"/>
+      <div class="dropdown" id="dropdown"></div>
+    </div>
+    <button class="adv-toggle-btn" id="adv-btn" onclick="toggleAdvanced()"><span class="chevron">▶</span> Advanced</button>
+  </div>
+  <div class="advanced-panel" id="adv-panel">
+    <div class="adv-rows">
+      <div class="adv-row">
+        <span class="adv-label">Generation</span>
+        <select id="gen-select" onchange="setGen(this.value)">
+          <option value="0">Latest (Gen 9)</option>
+          <option value="1">Gen 1</option><option value="2">Gen 2</option><option value="3">Gen 3</option>
+          <option value="4">Gen 4</option><option value="5">Gen 5</option><option value="6">Gen 6</option>
+          <option value="7">Gen 7</option><option value="8">Gen 8</option><option value="9">Gen 9</option>
+        </select>
+      </div>
+      <div class="adv-row">
+        <label class="adv-label" style="display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" onchange="toggleBattleForms(this.checked)"> Show battle-only forms
+        </label>
+      </div>
+      <div class="adv-row">
+        <span class="adv-label">Ability override</span>
+        <select id="ability-select" onchange="setAbilityOverride(this.value)">
+          <option value="">— none —</option>
+          <option value="levitate">Levitate</option><option value="flash-fire">Flash Fire</option>
+          <option value="volt-absorb">Volt Absorb</option><option value="water-absorb">Water Absorb</option>
+          <option value="storm-drain">Storm Drain</option><option value="earth-eater">Earth Eater</option>
+          <option value="dry-skin">Dry Skin</option><option value="sap-sipper">Sap Sipper</option>
+          <option value="motor-drive">Motor Drive</option><option value="lightning-rod">Lightning Rod</option>
+          <option value="well-baked-body">Well-Baked Body</option><option value="wind-rider">Wind Rider</option>
+          <option value="purifying-salt">Purifying Salt</option><option value="heatproof">Heatproof</option>
+          <option value="thick-fat">Thick Fat</option><option value="wonder-guard">Wonder Guard</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div id="search-error"></div>
+  <div id="feed"></div>
+</div>
+
+<p class="footer">powered by <a href="https://pokeapi.co">PokéAPI</a></p>
+
+<script src="js/data.js"></script>
+<script src="js/api.js"></script>
+<script src="js/render.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
