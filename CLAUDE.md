@@ -42,3 +42,15 @@ Scripts load in order via `<script>` tags: `data.js` → `api.js` → `render.js
 **Caching**: PokéAPI responses are cached in memory and persisted to localStorage on `beforeunload`. `fetchVarieties` has a two-condition early return — both `showableFormsCache[n]` AND `localizedNamesCache[n]` must be defined to skip the fetch.
 
 **DOM concurrency**: `loadEvoChain` is async and `renderFeed()` can be called again before it finishes (ability descriptions trigger a second render). Always look up `#evo-wrap` immediately before writing, never at the start of an async function.
+
+## Deployment
+
+- **Docker image:** `nginx:alpine` — all static files copied to `/usr/share/nginx/html`, nginx serves on port 80
+- **CI/CD:** `.github/workflows/deploy.yml` — builds and pushes to `ghcr.io/xoudusz/weakness-dex:latest` on every push to `master`
+- **Runtime:** `docker-compose.yml` on the server — image pulled from GHCR, uses `network_mode: nginx_proxy_default` to join NPM's network directly
+- **Reverse proxy:** Nginx Proxy Manager (NPM); configure a Proxy Host in NPM UI with forward hostname `weakness-dex` and port `80`
+- **To redeploy after a push:** `docker compose pull && docker compose up -d` on the server (CI only builds/pushes the image; it does not redeploy)
+
+## Claude Instructions
+
+- Do not add `Co-Authored-By` lines to commit messages.

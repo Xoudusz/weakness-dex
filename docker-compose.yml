@@ -3,9 +3,4 @@ services:
     image: ghcr.io/xoudusz/weakness-dex:latest
     container_name: weakness-dex
     restart: unless-stopped
-    networks:
-      - proxy
-
-networks:
-  proxy:
-    external: true
+    network_mode: nginx_proxy_default
