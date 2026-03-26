@@ -57,6 +57,7 @@ select:focus{border-color:var(--accent);}
 .hero-name{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--text);text-transform:capitalize;text-align:center;line-height:1.7;}
 .hero-types{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;}
 .type-pill{padding:2px 9px;border-radius:999px;font-weight:600;text-transform:capitalize;letter-spacing:.02em;font-size:10px;}
+.hero-identity{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;}
 .hero-abilities{width:100%;margin-top:6px;}
 .hero-abilities-label{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted);letter-spacing:.06em;margin-bottom:7px;text-align:center;}
 .ability-list{display:flex;flex-direction:column;gap:4px;width:100%;}
@@ -179,12 +180,9 @@ select:focus{border-color:var(--accent);}
 @media(max-width:700px){
   body{padding:20px 12px 60px;}
   .current-hero{grid-template-columns:1fr;}
-  .hero-left{flex-direction:row;align-items:center;padding:14px 16px;border-right:none;border-bottom:1px solid var(--border);gap:14px;}
-  .hero-left .sprite-wrap{margin-bottom:0;flex-shrink:0;}
+  .hero-left{flex-direction:column;align-items:center;padding:14px 16px;border-right:none;border-bottom:1px solid var(--border);gap:8px;}
+  .hero-left .sprite-wrap{margin-bottom:0;}
   .poke-img-current{width:72px;height:72px;}
-  .hero-num,.hero-name{text-align:left;}
-  .hero-types{justify-content:flex-start;}
-  .hero-abilities-label{text-align:left;}
   .hero-right{grid-template-columns:1fr;}
   .hero-weaknesses{border-right:none;border-bottom:1px solid var(--border);}
   .hero-stats{width:100%;}

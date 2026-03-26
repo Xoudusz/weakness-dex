@@ -269,10 +269,12 @@ function buildCurrentCard(entry) {
   return `<div class="poke-card is-current" id="card-current">
     <div class="current-hero">
       <div class="hero-left">
-        <div class="sprite-wrap"><img class="poke-img-current" id="current-sprite" src="${activeSprite || ''}" alt="${name}"/><span class="shiny-badge${shiny ? ' active' : ''}" id="shiny-toggle" onclick="toggleShiny('${name}')">✦</span></div>
-        <div class="hero-num">#${num}</div>
-        <div class="hero-name">${displayName}</div>
-        <div class="hero-types">${typePills}</div>
+        <div class="hero-identity">
+          <div class="sprite-wrap"><img class="poke-img-current" id="current-sprite" src="${activeSprite || ''}" alt="${name}"/><span class="shiny-badge${shiny ? ' active' : ''}" id="shiny-toggle" onclick="toggleShiny('${name}')">✦</span></div>
+          <div class="hero-num">#${num}</div>
+          <div class="hero-name">${displayName}</div>
+          <div class="hero-types">${typePills}</div>
+        </div>
         ${buildAbilitiesHtml(abilities)}
         ${flavorHtml}
       </div>
