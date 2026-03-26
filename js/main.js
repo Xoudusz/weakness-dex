@@ -157,25 +157,9 @@ async function lookup(name) {
   feed.prepend(ld);
 
   try {
-    let apiName = resolvedApiNameCache[name] || name;
-    let r = await fetch(`https://pokeapi.co/api/v2/pokemon/${apiName}`);
-    if (!r.ok) {
-      // No direct /pokemon entry — resolve via species default variety
-      const sr = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${name}`);
-      if (!sr.ok) throw new Error();
-      const sd = await sr.json();
-      const def = sd.varieties.find(v => v.is_default);
-      if (!def) throw new Error();
-      apiName = def.pokemon.name;
-      resolvedApiNameCache[name] = apiName;
-      r = await fetch(`https://pokeapi.co/api/v2/pokemon/${apiName}`);
-      if (!r.ok) throw new Error();
-    }
-    const d = await r.json();
-    // Normalize name: API may return "darmanitan-standard" or "giratina-altered" for base species.
-    // If user searched the species name directly, use the clean species name as canonical entry name.
+    const d = await fetchResolvedPokemon(name);
     const speciesName = d.species.name;
-    const pdata = {sprite: d.sprites.front_default, types: d.types.map(t => t.type.name)};
+    const pdata = {sprite: pickSprite(d.sprites), types: d.types.map(t => t.type.name)};
     spriteCache[speciesName] = pdata;
     spriteCache[d.name] = pdata;
     const speciesId = parseInt(d.species.url.split('/').filter(Boolean).pop());
@@ -206,25 +190,12 @@ async function switchForm(speciesName, formName) {
   const h = getHistory();
   const idx = h.findIndex(e => e.name === speciesName);
   if (idx < 0) return;
-  let apiName = resolvedApiNameCache[formName] || formName;
   try {
-    let r = await fetch(`https://pokeapi.co/api/v2/pokemon/${apiName}`);
-    if (!r.ok) {
-      const sr = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${formName}`);
-      if (!sr.ok) throw new Error();
-      const sd = await sr.json();
-      const def = sd.varieties.find(v => v.is_default);
-      if (!def) throw new Error();
-      apiName = def.pokemon.name;
-      resolvedApiNameCache[formName] = apiName;
-      r = await fetch(`https://pokeapi.co/api/v2/pokemon/${apiName}`);
-      if (!r.ok) throw new Error();
-    }
-    const d = await r.json();
+    const d = await fetchResolvedPokemon(formName);
     const sprite = pickSprite(d.sprites) || (spriteCache[speciesName] || {}).sprite || null;
     const shiny_sprite = pickShinySprite(d.sprites) || (spriteCache[speciesName] || {}).shiny_sprite || null;
     const pdata = {sprite, types: d.types.map(t => t.type.name)};
-    spriteCache[apiName] = pdata;
+    spriteCache[d.name] = pdata;
     spriteCache[formName] = pdata;
     h[idx] = {
       ...h[idx],
@@ -243,6 +214,10 @@ async function switchForm(speciesName, formName) {
 
 // --- Autocomplete ---
 
+function typeDotsHtml(types) {
+  return types.map(t => { const c = TC[t] || {bg:'#888'}; return `<span class="dd-type-dot" style="background:${c.bg}"></span>`; }).join('');
+}
+
 const inp = document.getElementById('inp');
 const dd = document.getElementById('dropdown');
 
@@ -255,7 +230,7 @@ async function updateDropdown(val) {
     const hi = m.slice(0, idx) + `<strong style="color:var(--accent)">${m.slice(idx, idx + val.length)}</strong>` + m.slice(idx + val.length);
     const cached = spriteCache[m];
     const sh = cached && cached.sprite ? `<img src="${cached.sprite}"/>` : '';
-    const td = cached ? cached.types.map(t => { const c = TC[t] || {bg:'#888'}; return `<span class="dd-type-dot" style="background:${c.bg}"></span>`; }).join('') : '';
+    const td = cached ? typeDotsHtml(cached.types) : '';
     return `<div class="dd-item" id="ddi-${i}" data-name="${m}"><div class="dd-sprite${cached ? '' : ' loading'}" id="ddsprite-${i}">${sh}</div><span class="dd-name">${hi}</span><div class="dd-types">${td}</div></div>`;
   }).join('');
   dd.classList.add('open');
@@ -270,7 +245,7 @@ async function updateDropdown(val) {
     se.classList.remove('loading');
     if (data.sprite) se.innerHTML = `<img src="${data.sprite}"/>`;
     const dw = ie.querySelector('.dd-types');
-    if (dw) dw.innerHTML = data.types.map(t => { const c = TC[t] || {bg:'#888'}; return `<span class="dd-type-dot" style="background:${c.bg}"></span>`; }).join('');
+    if (dw) dw.innerHTML = typeDotsHtml(data.types);
   });
 }
 

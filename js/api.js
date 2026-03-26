@@ -3,10 +3,59 @@ let allPokemon = [];
 const spriteCache = {};
 const abilityDescCache = {};
 const moveDataCache = {};
-const varietiesCache = {};
 const showableFormsCache = {}; // speciesName → [varietyName, ...]
 const defaultFormCache = {};   // speciesName → default variety pokemon name
 const resolvedApiNameCache = {}; // speciesName → actual /pokemon/{name} that resolves
+
+const CACHE_LS_KEY = 'wdex_apicache_v1';
+
+function loadCaches() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CACHE_LS_KEY) || 'null');
+    if (!saved) return;
+    Object.assign(spriteCache,          saved.sprite       || {});
+    Object.assign(abilityDescCache,     saved.ability      || {});
+    Object.assign(moveDataCache,        saved.move         || {});
+    Object.assign(showableFormsCache,   saved.forms        || {});
+    Object.assign(defaultFormCache,     saved.defaultForm  || {});
+    Object.assign(resolvedApiNameCache, saved.resolvedName || {});
+  } catch(e) {}
+}
+
+function saveCaches() {
+  try {
+    localStorage.setItem(CACHE_LS_KEY, JSON.stringify({
+      sprite:       spriteCache,
+      ability:      abilityDescCache,
+      move:         moveDataCache,
+      forms:        showableFormsCache,
+      defaultForm:  defaultFormCache,
+      resolvedName: resolvedApiNameCache,
+    }));
+  } catch(e) {} // handles QuotaExceededError gracefully
+}
+
+loadCaches();
+window.addEventListener('beforeunload', saveCaches);
+
+// Resolves a species/form name to the raw PokeAPI pokemon object, or throws.
+// Falls back to the species endpoint when /pokemon/{name} doesn't exist directly.
+async function fetchResolvedPokemon(name) {
+  let apiName = resolvedApiNameCache[name] || name;
+  let r = await fetch(`https://pokeapi.co/api/v2/pokemon/${apiName}`);
+  if (!r.ok) {
+    const sr = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${name}`);
+    if (!sr.ok) throw new Error();
+    const sd = await sr.json();
+    const def = sd.varieties.find(v => v.is_default);
+    if (!def) throw new Error();
+    apiName = def.pokemon.name;
+    resolvedApiNameCache[name] = apiName;
+    r = await fetch(`https://pokeapi.co/api/v2/pokemon/${apiName}`);
+    if (!r.ok) throw new Error();
+  }
+  return r.json();
+}
 
 function pickSprite(sprites) {
   return sprites.front_default
@@ -29,29 +78,14 @@ async function loadPokemonList() {
 }
 loadPokemonList();
 
-// Merged fetchPreview + fetchPokemonTypes — returns {sprite, types}
+// Returns {sprite, types} for dropdown previews and form chip icons.
 async function fetchPokemonData(name) {
   if (spriteCache[name]) return spriteCache[name];
-  let apiName = resolvedApiNameCache[name] || name;
   try {
-    let r = await fetch(`https://pokeapi.co/api/v2/pokemon/${apiName}`);
-    if (!r.ok) {
-      // No direct /pokemon entry — some species (e.g. wormadam) only have suffixed variants.
-      // Resolve via species default variety.
-      const sr = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${name}`);
-      if (!sr.ok) return null;
-      const sd = await sr.json();
-      const def = sd.varieties.find(v => v.is_default);
-      if (!def) return null;
-      apiName = def.pokemon.name;
-      resolvedApiNameCache[name] = apiName;
-      r = await fetch(`https://pokeapi.co/api/v2/pokemon/${apiName}`);
-      if (!r.ok) return null;
-    }
-    const d = await r.json();
+    const d = await fetchResolvedPokemon(name);
     const data = {sprite: pickSprite(d.sprites), types: d.types.map(t => t.type.name)};
     spriteCache[name] = data;
-    if (apiName !== name) spriteCache[apiName] = data;
+    if (d.name !== name) spriteCache[d.name] = data;
     return data;
   } catch(e) { return null; }
 }
@@ -84,10 +118,6 @@ async function fetchVarieties(speciesName) {
   try {
     const r = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${speciesName}`);
     const d = await r.json();
-
-    const allVNames = d.varieties.map(v => v.pokemon.name);
-    varietiesCache[speciesName] = allVNames;
-    for (const v of allVNames) varietiesCache[v] = allVNames;
 
     const defaultV = d.varieties.find(v => v.is_default);
     if (defaultV) defaultFormCache[speciesName] = defaultV.pokemon.name;

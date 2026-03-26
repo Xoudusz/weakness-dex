@@ -87,6 +87,13 @@ function group(all) {
 
 // --- Render helpers ---
 
+function renderTypePills(types) {
+  return types.map(t => {
+    const c = TC[t] || {bg:'#444', text:'#eee'};
+    return `<span class="type-pill" style="background:${c.bg};color:${c.text}">${t}</span>`;
+  }).join('');
+}
+
 function badge(type, mult, sm = false) {
   const c = TC[type] || {bg:'#444', text:'#eee'};
   return `<span class="badge${sm ? ' sm' : ''}" style="background:${c.bg};color:${c.text};border-color:${c.bg}AA">${type}<span class="mult">${mult}</span></span>`;
@@ -192,10 +199,7 @@ function buildCurrentCard(entry) {
   const displayName = entry.speciesName || entry.name;
   const num = String(entry.speciesId || entry.id).padStart(4, '0');
   const activeSprite = shiny ? shiny_sprite : sprite;
-  const typePills = types.map(t => {
-    const c = TC[t] || {bg:'#444', text:'#eee'};
-    return `<span class="type-pill" style="background:${c.bg};color:${c.text}">${t}</span>`;
-  }).join('');
+  const typePills = renderTypePills(types);
 
   const abilityKey = currentAbilityOverride || (abilities ? (abilities.find(a => REL_ABILITIES[a.name]) || {}).name : null);
   const defaultG = group(calcWeaknesses(types, null));
@@ -209,6 +213,9 @@ function buildCurrentCard(entry) {
   // Forms bar
   const speciesNameForForms = entry.speciesName || name;
   const showable = showableFormsCache[speciesNameForForms] || [];
+  if (showableFormsCache[speciesNameForForms] === undefined) {
+    fetchVarieties(speciesNameForForms).then(renderFeed);
+  }
   const activeForm = entry.activeForm || name;
   const isAlt = showable.includes(activeForm);
   let actionBarHtml = '';
@@ -267,10 +274,7 @@ function buildHistoryCard(entry) {
   const {name, sprite, types, abilities} = entry;
   const displayName = entry.speciesName || entry.name;
   const num = String(entry.speciesId || entry.id).padStart(4, '0');
-  const typePills = types.map(t => {
-    const c = TC[t] || {bg:'#444', text:'#eee'};
-    return `<span class="type-pill" style="background:${c.bg};color:${c.text}">${t}</span>`;
-  }).join('');
+  const typePills = renderTypePills(types);
   const abilityKey = currentAbilityOverride || (abilities ? (abilities.find(a => REL_ABILITIES[a.name]) || {}).name : null);
   const g = group(calcWeaknesses(types, abilityKey || null));
   const weakBadges = [...g.w4.map(t => badge(t, '×4', true)), ...g.w2.map(t => badge(t, '×2', true))];
