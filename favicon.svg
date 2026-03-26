@@ -31,7 +31,4 @@
   <!-- D-pad style buttons (bottom left) -->
   <rect x="1" y="19" width="15" height="4" rx="2" fill="#991100"/>
   <rect x="1" y="25" width="9" height="4" rx="2" fill="#770e00"/>
-
-  <!-- Outline on top -->
-  <rect width="32" height="32" rx="6" fill="none" stroke="#e8e840" stroke-width="2" stroke-opacity="0.5"/>
 </svg>
