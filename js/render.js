@@ -30,21 +30,21 @@ function formatEvoCondition(details) {
   if (d.held_item) parts.push(`hold ${d.held_item.name.replace(/-/g, ' ')}`);
   if (d.known_move) parts.push(`know ${d.known_move.name.replace(/-/g, ' ')}`);
   if (d.known_move_type) parts.push(`${d.known_move_type.name} move`);
-  if (d.min_happiness) parts.push('friendship');
-  if (d.min_beauty) parts.push('beauty');
-  if (d.min_affection) parts.push('affection');
-  if (d.time_of_day === 'day') parts.push('day');
-  if (d.time_of_day === 'night') parts.push('night');
+  if (d.min_happiness) parts.push(t('friendship'));
+  if (d.min_beauty) parts.push(t('beauty'));
+  if (d.min_affection) parts.push(t('affection'));
+  if (d.time_of_day === 'day') parts.push(t('day'));
+  if (d.time_of_day === 'night') parts.push(t('night'));
   if (d.gender === 1) parts.push('♀');
   if (d.gender === 2) parts.push('♂');
-  if (d.needs_overworld_rain) parts.push('rain');
-  if (d.turn_upside_down) parts.push('flip');
-  if (d.trade_species) parts.push(`trade for ${d.trade_species.name}`);
-  else if (d.trigger && d.trigger.name === 'trade') parts.push('trade');
+  if (d.needs_overworld_rain) parts.push(t('rain'));
+  if (d.turn_upside_down) parts.push(t('flip'));
+  if (d.trade_species) parts.push(`${t('trade')} for ${d.trade_species.name}`);
+  else if (d.trigger && d.trigger.name === 'trade') parts.push(t('trade'));
   if (d.location) parts.push(d.location.name.replace(/-/g, ' '));
   if (d.party_species) parts.push(`with ${d.party_species.name}`);
   if (d.party_type) parts.push(`with ${d.party_type.name}-type`);
-  return parts.join(' · ') || 'special';
+  return parts.join(' · ') || t('special_');
 }
 
 // --- Type calculation ---
@@ -90,25 +90,25 @@ function group(all) {
 function renderTypePills(types) {
   return types.map(t => {
     const c = TC[t] || {bg:'#444', text:'#eee'};
-    return `<span class="type-pill" style="background:${c.bg};color:${c.text}">${t}</span>`;
+    return `<span class="type-pill" style="background:${c.bg};color:${c.text}">${getLocalizedTypeName(t, currentLang)}</span>`;
   }).join('');
 }
 
 function badge(type, mult, sm = false) {
   const c = TC[type] || {bg:'#444', text:'#eee'};
-  return `<span class="badge${sm ? ' sm' : ''}" style="background:${c.bg};color:${c.text};border-color:${c.bg}AA">${type}<span class="mult">${mult}</span></span>`;
+  return `<span class="badge${sm ? ' sm' : ''}" style="background:${c.bg};color:${c.text};border-color:${c.bg}AA">${getLocalizedTypeName(type, currentLang)}<span class="mult">${mult}</span></span>`;
 }
 
 function renderGroups(g, sm = false) {
   const {w4, w2, imm, r2, r4} = g;
   let html = '';
-  if (w4.length) html += `<div class="weakness-block"><div class="section-label x4">WEAKNESS ×4</div><div class="badges">${w4.map(t => badge(t, '×4', sm)).join('')}</div></div>`;
-  if (w2.length) html += `<div class="weakness-block"><div class="section-label x2">WEAKNESS ×2</div><div class="badges">${w2.map(t => badge(t, '×2', sm)).join('')}</div></div>`;
+  if (w4.length) html += `<div class="weakness-block"><div class="section-label x4">${t('weak4')}</div><div class="badges">${w4.map(tp => badge(tp, '×4', sm)).join('')}</div></div>`;
+  if (w2.length) html += `<div class="weakness-block"><div class="section-label x2">${t('weak2')}</div><div class="badges">${w2.map(tp => badge(tp, '×2', sm)).join('')}</div></div>`;
   if ((w4.length || w2.length) && (imm.length || r2.length || r4.length)) html += '<hr class="divider-h">';
-  if (imm.length) html += `<div class="weakness-block"><div class="section-label x0">IMMUNE ×0</div><div class="badges">${imm.map(t => badge(t, '×0', sm)).join('')}</div></div>`;
-  if (r2.length) html += `<div class="weakness-block"><div class="section-label half">RESISTANT ×½</div><div class="badges">${r2.map(t => badge(t, '×½', sm)).join('')}</div></div>`;
-  if (r4.length) html += `<div class="weakness-block"><div class="section-label quarter">RESISTANT ×¼</div><div class="badges">${r4.map(t => badge(t, '×¼', sm)).join('')}</div></div>`;
-  if (!html) html = '<p class="empty-hint">No notable matchups</p>';
+  if (imm.length) html += `<div class="weakness-block"><div class="section-label x0">${t('immune')}</div><div class="badges">${imm.map(tp => badge(tp, '×0', sm)).join('')}</div></div>`;
+  if (r2.length) html += `<div class="weakness-block"><div class="section-label half">${t('resist2')}</div><div class="badges">${r2.map(tp => badge(tp, '×½', sm)).join('')}</div></div>`;
+  if (r4.length) html += `<div class="weakness-block"><div class="section-label quarter">${t('resist4')}</div><div class="badges">${r4.map(tp => badge(tp, '×¼', sm)).join('')}</div></div>`;
+  if (!html) html = `<p class="empty-hint">${t('noMatchups')}</p>`;
   return html;
 }
 
@@ -118,11 +118,11 @@ function renderStats(stats) {
   let cfg = STAT_CONFIG;
   if (currentGen === 1) {
     cfg = [
-      {key:'hp',             label:'HP',     color:'#4caf50'},
-      {key:'attack',         label:'Atk',    color:'#f44336'},
-      {key:'defense',        label:'Def',    color:'#ff9800'},
-      {key:'special-attack', label:'Special',color:'#9c27b0'},
-      {key:'speed',          label:'Speed',  color:'#e91e63'},
+      {key:'hp',             statKey:'hp',      color:'#4caf50'},
+      {key:'attack',         statKey:'atk',     color:'#f44336'},
+      {key:'defense',        statKey:'def',     color:'#ff9800'},
+      {key:'special-attack', statKey:'special', color:'#9c27b0'},
+      {key:'speed',          statKey:'speed',   color:'#e91e63'},
     ];
   }
   const rows = cfg.map(sc => {
@@ -130,9 +130,9 @@ function renderStats(stats) {
     const val = s ? s.base_stat : 0;
     total += val;
     const pct = Math.round((val / STAT_MAX) * 100);
-    return `<div class="stat-row"><div class="stat-top"><span class="stat-name">${sc.label}</span><span class="stat-val">${val}</span></div><div class="stat-bar-track"><div class="stat-bar-fill" style="width:${pct}%;background:${sc.color}"></div></div></div>`;
+    return `<div class="stat-row"><div class="stat-top"><span class="stat-name">${t(sc.statKey)}</span><span class="stat-val">${val}</span></div><div class="stat-bar-track"><div class="stat-bar-fill" style="width:${pct}%;background:${sc.color}"></div></div></div>`;
   }).join('');
-  return `<div class="stat-rows">${rows}<hr class="stat-divider"><div class="stat-total"><span class="stat-total-label">Total</span><span class="stat-total-val">${total}</span></div></div>`;
+  return `<div class="stat-rows">${rows}<hr class="stat-divider"><div class="stat-total"><span class="stat-total-label">${t('total')}</span><span class="stat-total-val">${total}</span></div></div>`;
 }
 
 // --- Tooltip ---
@@ -169,8 +169,9 @@ function attachTooltipEvents() {
       if (Date.now() - tooltipEnabledAt < TOOLTIP_DELAY) return;
       clearTimeout(tooltipHideTimer);
       tooltipShowTimer = setTimeout(async () => {
-        let desc = abilityDescCache[name];
-        if (desc === undefined) { showTooltip(el, 'Loading…'); desc = await fetchAbilityDesc(name); }
+        const cacheKey = `${name}__${currentLang}`;
+        let desc = abilityDescCache[cacheKey];
+        if (desc === undefined) { showTooltip(el, t('loading')); desc = await fetchAbilityDesc(name, currentLang); }
         showTooltip(el, desc);
       }, 120);
     });
@@ -185,18 +186,20 @@ function buildAbilitiesHtml(abilities) {
   if (!abilities || !abilities.length) return '';
   const pills = abilities.map(a => {
     const isR = !!REL_ABILITIES[a.name];
-    const haTag = a.is_hidden ? '<span class="ha-tag">HA</span>' : '';
+    const haTag = a.is_hidden ? `<span class="ha-tag">${t('ha')}</span>` : '';
     const cls = 'ability-pill' + (isR ? ' relevant' : '') + (a.is_hidden ? ' ha-border' : '');
-    return `<div class="ability-entry" data-ability="${a.name}"><span class="${cls}">${a.name.replace(/-/g, ' ')}${haTag}</span></div>`;
+    const localAbilityName = getLocalizedName(abilityNamesCache[a.name], currentLang) || a.name.replace(/-/g, ' ');
+    return `<div class="ability-entry" data-ability="${a.name}"><span class="${cls}">${localAbilityName}${haTag}</span></div>`;
   }).join('');
-  return `<div class="hero-abilities"><div class="hero-abilities-label">ABILITIES</div><div class="ability-list">${pills}</div></div>`;
+  return `<div class="hero-abilities"><div class="hero-abilities-label">${t('abilities')}</div><div class="ability-list">${pills}</div></div>`;
 }
 
 // --- Current card ---
 
 function buildCurrentCard(entry) {
   const {name, sprite, shiny, shiny_sprite, types, abilities, stats} = entry;
-  const displayName = entry.speciesName || entry.name;
+  const speciesName = entry.speciesName || entry.name;
+  const displayName = getLocalizedName(localizedNamesCache[speciesName], currentLang) || entry.speciesName || entry.name;
   const num = String(entry.speciesId || entry.id).padStart(4, '0');
   const activeSprite = shiny ? shiny_sprite : sprite;
   const typePills = renderTypePills(types);
@@ -205,15 +208,29 @@ function buildCurrentCard(entry) {
   const defaultG = group(calcWeaknesses(types, null));
   const hasTwoCol = !!abilityKey;
   const abilityG = hasTwoCol ? group(calcWeaknesses(types, abilityKey)) : null;
+  const localAbilityLabel = abilityKey ? (getLocalizedName(abilityNamesCache[abilityKey], currentLang) || abilityKey.replace(/-/g, ' ')).toUpperCase() : '';
   const weaknessHtml = hasTwoCol
-    ? `<div class="twocol"><div><div class="col-label">DEFAULT</div>${renderGroups(defaultG)}</div><div><div class="col-label">WITH ${abilityKey.replace(/-/g, ' ').toUpperCase()}</div>${renderGroups(abilityG)}</div></div>`
+    ? `<div class="twocol"><div><div class="col-label">${t('default_')}</div>${renderGroups(defaultG)}</div><div><div class="col-label">${t('with_')} ${localAbilityLabel}</div>${renderGroups(abilityG)}</div></div>`
     : renderGroups(defaultG);
   const statsHtml = renderStats(stats);
 
+  const ftEntries = flavorTextCache[speciesName] || [];
+  const ftLang = ftEntries.filter(e => e.language.name === currentLang);
+  const ftFallback = ftLang.length ? ftLang : ftEntries.filter(e => e.language.name === 'en');
+  const seen = new Set();
+  const ftUniq = ftFallback.filter(e => {
+    const t = e.flavor_text.replace(/[\n\f]/g, ' ');
+    if (seen.has(t)) return false;
+    seen.add(t);
+    return true;
+  });
+  const flavorText = ftUniq.length ? ftUniq[ftUniq.length - 1].flavor_text.replace(/[\n\f]/g, ' ') : '';
+  const flavorHtml = flavorText ? `<div class="flavor-text">${flavorText}</div>` : '';
+
   // Forms bar
-  const speciesNameForForms = entry.speciesName || name;
+  const speciesNameForForms = speciesName;
   const showable = showableFormsCache[speciesNameForForms] || [];
-  if (showableFormsCache[speciesNameForForms] === undefined) {
+  if (showableFormsCache[speciesNameForForms] === undefined || localizedNamesCache[speciesNameForForms] === undefined) {
     fetchVarieties(speciesNameForForms).then(renderFeed);
   }
   const activeForm = entry.activeForm || name;
@@ -244,9 +261,9 @@ function buildCurrentCard(entry) {
       });
     });
 
-    actionBarHtml = `<div class="card-action-bar"><span class="forms-label">FORMS</span>${chips}<button class="moves-btn" onclick="openMoves('${activeForm}')">📋 Moves</button></div>`;
+    actionBarHtml = `<div class="card-action-bar"><span class="forms-label">${t('forms')}</span>${chips}<button class="moves-btn" onclick="openMoves('${activeForm}')">📋 ${t('movesBtn')}</button></div>`;
   } else {
-    actionBarHtml = `<div class="card-action-bar"><button class="moves-btn" onclick="openMoves('${activeForm}')">📋 Moves</button></div>`;
+    actionBarHtml = `<div class="card-action-bar"><button class="moves-btn" onclick="openMoves('${activeForm}')">📋 ${t('movesBtn')}</button></div>`;
   }
 
   return `<div class="poke-card is-current" id="card-current">
@@ -257,10 +274,11 @@ function buildCurrentCard(entry) {
         <div class="hero-name">${displayName}</div>
         <div class="hero-types">${typePills}</div>
         ${buildAbilitiesHtml(abilities)}
+        ${flavorHtml}
       </div>
       <div class="hero-right">
-        <div class="hero-weaknesses"><div class="panel-label">WEAKNESSES</div>${weaknessHtml}</div>
-        <div class="hero-stats"><div class="panel-label">BASE STATS</div>${statsHtml}</div>
+        <div class="hero-weaknesses"><div class="panel-label">${t('weaknesses')}</div>${weaknessHtml}</div>
+        <div class="hero-stats"><div class="panel-label">${t('baseStats')}</div>${statsHtml}</div>
       </div>
     </div>
     ${actionBarHtml}
@@ -272,7 +290,7 @@ function buildCurrentCard(entry) {
 
 function buildHistoryCard(entry) {
   const {name, sprite, types, abilities} = entry;
-  const displayName = entry.speciesName || entry.name;
+  const displayName = getLocalizedName(localizedNamesCache[entry.speciesName], currentLang) || entry.speciesName || entry.name;
   const num = String(entry.speciesId || entry.id).padStart(4, '0');
   const typePills = renderTypePills(types);
   const abilityKey = currentAbilityOverride || (abilities ? (abilities.find(a => REL_ABILITIES[a.name]) || {}).name : null);
@@ -285,9 +303,10 @@ function buildHistoryCard(entry) {
 
 function evoMonEl(name, spriteUrl, types, isCurrent, condition) {
   const img = spriteUrl ? `<img src="${spriteUrl}"/>` : `<div style="width:48px;height:48px;background:var(--surface2);border-radius:50%"></div>`;
-  const tp = types && types[0] ? `<span class="evo-type" style="background:${(TC[types[0]] || {bg:'#444'}).bg};color:${(TC[types[0]] || {text:'#eee'}).text}">${types[0]}</span>` : '';
+  const tp = types && types[0] ? `<span class="evo-type" style="background:${(TC[types[0]] || {bg:'#444'}).bg};color:${(TC[types[0]] || {text:'#eee'}).text}">${getLocalizedTypeName(types[0], currentLang)}</span>` : '';
   const cond = condition ? `<span class="evo-cond">${condition}</span>` : '';
-  return `<div class="evo-mon${isCurrent ? ' current' : ''}" onclick="lookup('${name}')">${img}<span class="evo-name">${name}</span>${tp}${cond}</div>`;
+  const evoDisplayName = getLocalizedName(localizedNamesCache[name], currentLang) || name;
+  return `<div class="evo-mon${isCurrent ? ' current' : ''}" onclick="lookup('${name}')">${img}<span class="evo-name">${evoDisplayName}</span>${tp}${cond}</div>`;
 }
 
 function walkChain(node) {
@@ -296,18 +315,26 @@ function walkChain(node) {
 }
 
 async function loadEvoChain(entry) {
-  const wrap = document.getElementById('evo-wrap');
-  if (!wrap) return;
   try {
-    const sr = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${entry.speciesName || entry.id}`);
-    const sd = await sr.json();
-    const er = await fetch(sd.evolution_chain.url);
-    const ed = await er.json();
+    const speciesKey = entry.speciesName || entry.name;
+    let chainUrl = evoChainUrlCache[speciesKey];
+    if (!chainUrl) {
+      await fetchVarieties(speciesKey);
+      chainUrl = evoChainUrlCache[speciesKey];
+    }
+    if (!chainUrl) return;
+    const chainId = chainUrl.split('/').filter(Boolean).pop();
+    let ed = evoChainCache[chainId];
+    if (!ed) {
+      const er = await fetch(chainUrl);
+      ed = await er.json();
+      evoChainCache[chainId] = ed;
+    }
     const tree = walkChain(ed.chain);
     if (!tree) return;
 
     function allNames(node) { return [node.name, ...node.children.flatMap(allNames)]; }
-    await Promise.all([...new Set(allNames(tree))].map(n => fetchPokemonData(n)));
+    await Promise.all([...new Set(allNames(tree))].map(n => Promise.all([fetchPokemonData(n), fetchVarieties(n)])));
     const currentName = entry.name;
 
     function findBranchingAncestor(node, target, ancestor) {
@@ -332,7 +359,7 @@ async function loadEvoChain(entry) {
       const aData = spriteCache[branchingAncestor] || {};
       const curNode = findNode(tree, currentName);
       const cond = formatEvoCondition(curNode ? curNode.evo_details : []);
-      html = `<div class="evo-from"><span class="evo-from-label">evolves from</span>${evoMonEl(branchingAncestor, aData.sprite, aData.types, false, '')}<span class="evo-arrow">→</span>${evoMonEl(currentName, (spriteCache[currentName] || {}).sprite, (spriteCache[currentName] || {}).types, true, cond)}</div>`;
+      html = `<div class="evo-from"><span class="evo-from-label">${t('evolvesFrom')}</span>${evoMonEl(branchingAncestor, aData.sprite, aData.types, false, '')}<span class="evo-arrow">→</span>${evoMonEl(currentName, (spriteCache[currentName] || {}).sprite, (spriteCache[currentName] || {}).types, true, cond)}</div>`;
     } else if (isBranching) {
       function findBranchNode(node) { if (node.children.length > 1) return node; if (node.children[0]) return findBranchNode(node.children[0]); return node; }
       const branchNode = findBranchNode(tree);
@@ -369,6 +396,8 @@ async function loadEvoChain(entry) {
       html = `<div class="evo-linear">${tiles}</div>`;
     }
 
-    wrap.innerHTML = `<div class="evo-chain"><div class="evo-label">EVOLUTION CHAIN</div>${html}</div>`;
+    const wrap = document.getElementById('evo-wrap');
+    if (!wrap) return;
+    wrap.innerHTML = `<div class="evo-chain"><div class="evo-label">${t('evoChain')}</div>${html}</div>`;
   } catch(e) {}
 }

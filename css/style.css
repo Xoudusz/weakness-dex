@@ -24,6 +24,7 @@ input[type=text]::placeholder{color:var(--muted);}
 .dd-name{flex:1;}
 .dd-types{display:flex;gap:3px;}
 .dd-type-dot{width:8px;height:8px;border-radius:50%;}
+.dd-hint{padding:10px 14px;font-size:11px;color:var(--muted);font-style:italic;}
 
 /* Advanced */
 .adv-toggle-btn{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border);color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:12px;border-radius:10px;padding:13px 14px;cursor:pointer;white-space:nowrap;transition:color .15s,border-color .15s;}
@@ -170,6 +171,7 @@ select:focus{border-color:var(--accent);}
 @keyframes spin{to{transform:rotate(360deg);}}
 .error-msg{text-align:center;color:#ff6666;font-size:13px;padding:12px 0;}
 .empty-hint{font-size:11px;color:var(--muted);font-style:italic;}
+.flavor-text{font-size:11px;color:var(--muted2);font-style:italic;margin-top:8px;line-height:1.5;text-align:center;}
 .footer{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--muted);margin-top:48px;text-align:center;line-height:2.2;}
 .footer a{color:var(--accent);text-decoration:none;}
 .footer a:hover{text-decoration:underline;}

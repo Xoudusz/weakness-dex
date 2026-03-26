@@ -41,7 +41,10 @@ function toggleShiny(name) {
 // --- Moves ---
 
 async function openMoves(pokemonName) {
-  document.getElementById('moves-title').textContent = `${pokemonName} — moves`;
+  const histEntry = getHistory().find(e => e.activeForm === pokemonName || e.speciesName === pokemonName);
+  const speciesKey = histEntry ? histEntry.speciesName : pokemonName;
+  const movesDisplayName = getLocalizedName(localizedNamesCache[speciesKey], currentLang) || pokemonName.replace(/-/g, ' ');
+  document.getElementById('moves-title').textContent = `${movesDisplayName} — ${t('movesBtn')}`;
   document.getElementById('moves-overlay').style.display = 'flex';
   document.getElementById('moves-tabs').innerHTML = '';
   document.getElementById('moves-body').innerHTML = '<div class="moves-loading"></div>';
@@ -68,14 +71,14 @@ async function openMoves(pokemonName) {
       for (const k of Object.keys(byMethod)) { if (k !== 'level-up') byMethod[k].sort((a, b) => a.name.localeCompare(b.name)); }
       currentMovesData = {name: pokemonName, byMethod};
     } catch(e) {
-      document.getElementById('moves-body').innerHTML = '<p class="moves-empty">Failed to load moves.</p>';
+      document.getElementById('moves-body').innerHTML = `<p class="moves-empty">${t('failedMoves')}</p>`;
       return;
     }
   }
 
-  currentAvailableTabs = MOVE_TABS.filter(t => (currentMovesData.byMethod[t.key] || []).length > 0);
-  if (!currentAvailableTabs.length) { document.getElementById('moves-body').innerHTML = '<p class="moves-empty">No move data available.</p>'; return; }
-  if (!currentAvailableTabs.find(t => t.key === currentMovesTab)) currentMovesTab = currentAvailableTabs[0].key;
+  currentAvailableTabs = MOVE_TABS.filter(tab => (currentMovesData.byMethod[tab.key] || []).length > 0);
+  if (!currentAvailableTabs.length) { document.getElementById('moves-body').innerHTML = `<p class="moves-empty">${t('noMoveData')}</p>`; return; }
+  if (!currentAvailableTabs.find(tab => tab.key === currentMovesTab)) currentMovesTab = currentAvailableTabs[0].key;
 
   renderMoveTabs(currentMovesTab);
   renderMoveTable(currentMovesTab);
@@ -89,8 +92,8 @@ async function openMoves(pokemonName) {
 }
 
 function renderMoveTabs(activeTab) {
-  document.getElementById('moves-tabs').innerHTML = currentAvailableTabs.map(t =>
-    `<div class="moves-tab${t.key === activeTab ? ' active' : ''}" onclick="switchMoveTab('${t.key}')">${t.label}</div>`
+  document.getElementById('moves-tabs').innerHTML = currentAvailableTabs.map(tab =>
+    `<div class="moves-tab${tab.key === activeTab ? ' active' : ''}" onclick="switchMoveTab('${tab.key}')">${t(tab.labelKey)}</div>`
   ).join('');
 }
 
@@ -100,15 +103,18 @@ function renderMoveTable(tab) {
   if (!currentMovesData) return;
   const body = document.getElementById('moves-body');
   const filtered = currentMovesData.byMethod[tab] || [];
-  if (!filtered.length) { body.innerHTML = '<p class="moves-empty">No moves in this category.</p>'; return; }
+  if (!filtered.length) { body.innerHTML = `<p class="moves-empty">${t('noMovesInCat')}</p>`; return; }
 
   function buildTable() {
-    let html = `<table class="moves-table"><thead><tr>${tab === 'level-up' ? '<th>LV</th>' : ''}<th>MOVE</th><th>TYPE</th><th>CAT</th><th>PWR</th><th>ACC</th><th>PP</th></tr></thead><tbody>`;
+    let html = `<table class="moves-table"><thead><tr>${tab === 'level-up' ? `<th>${t('colLv')}</th>` : ''}<th>${t('colMove')}</th><th>${t('colType')}</th><th>${t('colCat')}</th><th>${t('colPwr')}</th><th>${t('colAcc')}</th><th>${t('colPp')}</th></tr></thead><tbody>`;
     for (const m of filtered) {
       const det = moveDataCache[m.name] || {};
       const mc = TC[det.type] || {bg:'#555', text:'#aaa'};
+      const catKey = det.category === 'physical' ? 'catPhysical' : det.category === 'special' ? 'catSpecial' : 'catStatus';
       const catCls = det.category === 'physical' ? 'physical' : det.category === 'special' ? 'special' : 'status';
-      html += `<tr>${tab === 'level-up' ? `<td><span class="move-level">${m.level || '—'}</span></td>` : ''}<td style="text-transform:capitalize">${m.name.replace(/-/g, ' ')}</td><td>${det.type ? `<span style="background:${mc.bg};color:${mc.text};padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600">${det.type}</span>` : '—'}</td><td>${det.category ? `<span class="move-cat ${catCls}">${det.category}</span>` : '—'}</td><td class="move-power">${det.power || '—'}</td><td>${det.accuracy || '—'}</td><td>${det.pp || '—'}</td></tr>`;
+      const moveName = getLocalizedName(det.names, currentLang) || m.name.replace(/-/g, ' ');
+      const typeLabel = det.type ? getLocalizedTypeName(det.type, currentLang) : '—';
+      html += `<tr>${tab === 'level-up' ? `<td><span class="move-level">${m.level || '—'}</span></td>` : ''}<td style="text-transform:capitalize">${moveName}</td><td>${det.type ? `<span style="background:${mc.bg};color:${mc.text};padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600">${typeLabel}</span>` : '—'}</td><td>${det.category ? `<span class="move-cat ${catCls}">${t(catKey)}</span>` : '—'}</td><td class="move-power">${det.power || '—'}</td><td>${det.accuracy || '—'}</td><td>${det.pp || '—'}</td></tr>`;
     }
     html += '</tbody></table>';
     return html;
@@ -137,7 +143,70 @@ function toggleAdvanced() {
 
 function setGen(val) { currentGen = parseInt(val); renderFeed(); }
 function setAbilityOverride(val) { currentAbilityOverride = val; renderFeed(); }
+let localizedSearchIndex = new Map(); // localizedLowerName → speciesName
+
+function rebuildLocalizedIndex() {
+  localizedSearchIndex = new Map();
+  if (currentLang === 'en') return;
+  for (const [species, names] of Object.entries(localizedNamesCache)) {
+    const localName = getLocalizedName(names, currentLang);
+    if (localName) localizedSearchIndex.set(localName.toLowerCase(), species);
+  }
+}
+rebuildLocalizedIndex();
+
+async function prefetchLocalizedNames() {
+  const missing = allPokemon.filter(n => !localizedNamesCache[n]);
+  if (!missing.length) return;
+  const BATCH = 20;
+  for (let i = 0; i < missing.length; i += BATCH) {
+    await Promise.all(missing.slice(i, i + BATCH).map(n => fetchVarieties(n)));
+    rebuildLocalizedIndex();
+  }
+  saveCaches();
+}
+
+function updateStaticLabels() {
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
+  document.documentElement.lang = currentLang === 'roomaji' ? 'ja' : currentLang;
+}
+
+function setLang(val) {
+  currentLang = val;
+  localStorage.setItem('wdex_lang', val);
+  currentMovesData = null;
+  rebuildLocalizedIndex();
+  updateStaticLabels();
+  renderFeed();
+  const missing = getHistory().filter(e => !localizedNamesCache[e.speciesName]);
+  if (missing.length) Promise.all(missing.map(e => fetchVarieties(e.speciesName))).then(() => { rebuildLocalizedIndex(); renderFeed(); });
+  prefetchLocalizedNames();
+}
 function bringToTop(name) { lookup(name); }
+
+const LANG_LIST_LS_KEY = 'wdex_lang_list_v1';
+
+async function loadLanguageList() {
+  let langs;
+  try {
+    const saved = localStorage.getItem(LANG_LIST_LS_KEY);
+    if (saved) langs = JSON.parse(saved);
+  } catch(e) {}
+  if (!langs) {
+    try {
+      const r = await fetch('https://pokeapi.co/api/v2/language/');
+      const d = await r.json();
+      langs = d.results.filter(l => LANG_LABELS[l.name]);
+      localStorage.setItem(LANG_LIST_LS_KEY, JSON.stringify(langs));
+    } catch(e) { langs = []; }
+  }
+  const sel = document.getElementById('lang-select');
+  sel.innerHTML = langs
+    .map(l => `<option value="${l.name}"${l.name === currentLang ? ' selected' : ''}>${LANG_LABELS[l.name]}</option>`)
+    .join('');
+}
+loadLanguageList();
 
 // --- Lookup ---
 
@@ -177,7 +246,9 @@ async function lookup(name) {
     await fetchVarieties(speciesName);
     saveToHistory(entry);
     ld.remove();
+    rebuildLocalizedIndex();
     renderFeed();
+    Promise.all(entry.abilities.map(a => fetchAbilityDesc(a.name, currentLang))).then(renderFeed);
   } catch(e) {
     ld.remove();
     document.getElementById('search-error').innerHTML = `<p class="error-msg">Pokémon "${name}" not found. Check the spelling?</p>`;
@@ -222,12 +293,39 @@ const inp = document.getElementById('inp');
 const dd = document.getElementById('dropdown');
 
 async function updateDropdown(val) {
-  const matches = allPokemon.filter(n => n.includes(val)).slice(0, 7);
-  if (!matches.length) { closeDropdown(); return; }
+  // Merge localized matches (from cache) + English matches, dedup
+  const seen = new Set();
+  const merged = [];
+  if (currentLang !== 'en') {
+    for (const [localLower, species] of localizedSearchIndex) {
+      if (localLower.includes(val) && !seen.has(species)) { seen.add(species); merged.push(species); }
+    }
+  }
+  for (const n of allPokemon) { if (n.includes(val) && !seen.has(n)) { seen.add(n); merged.push(n); } }
+  const matches = merged.slice(0, 7);
+  if (!matches.length) {
+    if (currentLang !== 'en') {
+      dd.innerHTML = `<div class="dd-hint">${t('searchHint')}</div>`;
+      dd.classList.add('open');
+      allPokemon.filter(n => n.includes(val)).slice(0, 3).forEach(m => {
+        if (!localizedNamesCache[m]) fetchVarieties(m).then(() => {
+          const ln = getLocalizedName(localizedNamesCache[m], currentLang);
+          if (ln) localizedSearchIndex.set(ln.toLowerCase(), m);
+        });
+      });
+    } else {
+      closeDropdown();
+    }
+    return;
+  }
   ddIndex = -1;
   dd.innerHTML = matches.map((m, i) => {
-    const idx = m.indexOf(val);
-    const hi = m.slice(0, idx) + `<strong style="color:var(--accent)">${m.slice(idx, idx + val.length)}</strong>` + m.slice(idx + val.length);
+    const localName = getLocalizedName(localizedNamesCache[m], currentLang) || m;
+    const displayLower = localName.toLowerCase();
+    const idx = displayLower.indexOf(val);
+    const hi = idx >= 0
+      ? localName.slice(0, idx) + `<strong style="color:var(--accent)">${localName.slice(idx, idx + val.length)}</strong>` + localName.slice(idx + val.length)
+      : localName;
     const cached = spriteCache[m];
     const sh = cached && cached.sprite ? `<img src="${cached.sprite}"/>` : '';
     const td = cached ? typeDotsHtml(cached.types) : '';
@@ -235,6 +333,7 @@ async function updateDropdown(val) {
   }).join('');
   dd.classList.add('open');
   dd.querySelectorAll('.dd-item').forEach(el => el.addEventListener('mousedown', e => { e.preventDefault(); lookup(el.dataset.name); }));
+  const currentVal = val;
   matches.forEach(async (m, i) => {
     if (spriteCache[m]) return;
     const data = await fetchPokemonData(m);
@@ -247,6 +346,21 @@ async function updateDropdown(val) {
     const dw = ie.querySelector('.dd-types');
     if (dw) dw.innerHTML = typeDotsHtml(data.types);
   });
+  if (currentLang !== 'en') {
+    matches.forEach(async (m, i) => {
+      if (localizedNamesCache[m]) return;
+      await fetchVarieties(m);
+      const localName = getLocalizedName(localizedNamesCache[m], currentLang);
+      if (localName) localizedSearchIndex.set(localName.toLowerCase(), m);
+      const ne = document.getElementById(`ddi-${i}`)?.querySelector('.dd-name');
+      if (!ne) return;
+      const displayLower = localName.toLowerCase();
+      const idx = displayLower.indexOf(currentVal);
+      ne.innerHTML = idx >= 0
+        ? localName.slice(0, idx) + `<strong style="color:var(--accent)">${localName.slice(idx, idx + currentVal.length)}</strong>` + localName.slice(idx + currentVal.length)
+        : localName;
+    });
+  }
 }
 
 inp.addEventListener('input', () => {
@@ -269,4 +383,6 @@ inp.addEventListener('blur', () => setTimeout(closeDropdown, 150));
 function closeDropdown() { dd.classList.remove('open'); ddIndex = -1; }
 
 // --- Init ---
+updateStaticLabels();
 renderFeed();
+pokemonListReady.then(() => prefetchLocalizedNames());

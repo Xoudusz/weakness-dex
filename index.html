@@ -9,7 +9,7 @@
 </head>
 <body>
 <h1>WEAKNESS DEX</h1>
-<p class="sub">Type a Pokémon nme to see its weaknesses</p>
+<p class="sub" data-i18n="subtitle">Type a Pokémon name to see its weaknesses</p>
 <div class="ability-tooltip-box" id="ability-tooltip"></div>
 
 <div class="moves-overlay" id="moves-overlay" style="display:none" onclick="closeMoves(event)">
@@ -26,26 +26,26 @@
 <div class="main-col">
   <div class="top-bar">
     <div class="search-wrap">
-      <input type="text" id="inp" placeholder="e.g. poochyena, charizard…" autocomplete="off" spellcheck="false"/>
+      <input type="text" id="inp" data-i18n-placeholder="searchPlaceholder" placeholder="e.g. poochyena, charizard…" autocomplete="off" spellcheck="false"/>
       <div class="dropdown" id="dropdown"></div>
     </div>
-    <button class="adv-toggle-btn" id="adv-btn" onclick="toggleAdvanced()"><span class="chevron">▶</span> Advanced</button>
+    <button class="adv-toggle-btn" id="adv-btn" onclick="toggleAdvanced()"><span class="chevron">▶</span> <span data-i18n="advancedBtn">Advanced</span></button>
   </div>
   <div class="advanced-panel" id="adv-panel">
     <div class="adv-rows">
       <div class="adv-row">
-        <span class="adv-label">Generation</span>
+        <span class="adv-label" data-i18n="genLabel">Generation</span>
         <select id="gen-select" onchange="setGen(this.value)">
-          <option value="0">Latest (Gen 9)</option>
+          <option value="0" data-i18n="latestGen">Latest (Gen 9)</option>
           <option value="1">Gen 1</option><option value="2">Gen 2</option><option value="3">Gen 3</option>
           <option value="4">Gen 4</option><option value="5">Gen 5</option><option value="6">Gen 6</option>
           <option value="7">Gen 7</option><option value="8">Gen 8</option><option value="9">Gen 9</option>
         </select>
       </div>
       <div class="adv-row">
-        <span class="adv-label">Ability override</span>
+        <span class="adv-label" data-i18n="abilityLabel">Ability override</span>
         <select id="ability-select" onchange="setAbilityOverride(this.value)">
-          <option value="">— none —</option>
+          <option value="" data-i18n="noneOption">— none —</option>
           <option value="levitate">Levitate</option><option value="flash-fire">Flash Fire</option>
           <option value="volt-absorb">Volt Absorb</option><option value="water-absorb">Water Absorb</option>
           <option value="storm-drain">Storm Drain</option><option value="earth-eater">Earth Eater</option>
@@ -54,6 +54,12 @@
           <option value="well-baked-body">Well-Baked Body</option><option value="wind-rider">Wind Rider</option>
           <option value="purifying-salt">Purifying Salt</option><option value="heatproof">Heatproof</option>
           <option value="thick-fat">Thick Fat</option><option value="wonder-guard">Wonder Guard</option>
+        </select>
+      </div>
+      <div class="adv-row">
+        <span class="adv-label" data-i18n="languageLabel">Language</span>
+        <select id="lang-select" onchange="setLang(this.value)">
+          <option value="en">English</option>
         </select>
       </div>
     </div>
