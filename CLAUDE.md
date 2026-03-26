@@ -51,6 +51,10 @@ Scripts load in order via `<script>` tags: `data.js` → `api.js` → `render.js
 - **Reverse proxy:** Nginx Proxy Manager (NPM); configure a Proxy Host in NPM UI with forward hostname `weakness-dex` and port `80`
 - **To redeploy after a push:** `docker compose pull && docker compose up -d` on the server (CI only builds/pushes the image; it does not redeploy)
 
+## License
+
+GNU General Public License v3.0 — see `LICENSE`.
+
 ## Claude Instructions
 
 - Do not add `Co-Authored-By` lines to commit messages.

@@ -52,6 +52,10 @@ The GitHub Actions workflow (`.github/workflows/deploy.yml`) builds and pushes t
 
 Feel free to fork and self-host. The project is intentionally simple — vanilla JS, no bundler, no framework. All logic lives in four files: `js/data.js`, `js/api.js`, `js/render.js`, `js/main.js`. See `CLAUDE.md` for a full architectural overview.
 
+## License
+
+[GNU General Public License v3.0](LICENSE)
+
 ## Credits
 
 - Data from [PokéAPI](https://pokeapi.co)
