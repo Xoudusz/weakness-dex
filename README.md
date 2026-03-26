@@ -1,6 +1,6 @@
-# Weakness Dex
+![WeaknessDex banner](banner.svg)
 
-A fast, offline-friendly Pokémon type weakness lookup tool. Search any Pokémon by name, see its full type matchup chart, abilities, evolution chain, and move list — across all generations and in 11 languages.
+A fast Pokémon type weakness lookup tool. Search any Pokémon by name, see its full type matchup chart, abilities, evolution chain, and move list — across all generations and in 7 languages.
 
 **Live:** [weakness-dex.hyvitech.org](https://weakness-dex.hyvitech.org)
 
@@ -11,7 +11,7 @@ A fast, offline-friendly Pokémon type weakness lookup tool. Search any Pokémon
 - Ability override (Levitate, Wonder Guard, etc.) affects the chart in real time
 - Evolution chain with sprites
 - Move list with tabs (level-up, TM, egg, tutor)
-- Localized search and UI in 11 languages (EN, DE, FR, ES, IT, JA, KO, ZH-Hans, ZH-Hant, PT, RU)
+- Localized search and UI in 7 languages (EN, DE, FR, ES, IT, JA, KO)
 - Lookup history
 - All PokéAPI responses cached in `localStorage` — fast after the first load
 

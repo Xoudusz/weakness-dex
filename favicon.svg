@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Body -->
+  <rect width="32" height="32" rx="6" fill="#1a1a1a"/>
+
+  <!-- Red left panel (top half) -->
+  <path d="M0,6 Q0,0 6,0 L20,0 L20,15 L0,15 Z" fill="#cc1200"/>
+
+  <!-- Vertical hinge -->
+  <rect x="19" y="0" width="3" height="32" fill="#0d0d0d"/>
+
+  <!-- Horizontal separator -->
+  <rect x="0" y="14" width="32" height="3" fill="#0d0d0d"/>
+
+  <!-- Lens outer ring -->
+  <circle cx="9" cy="7" r="5.5" fill="#ffffff" opacity="0.15"/>
+  <!-- Lens body -->
+  <circle cx="9" cy="7" r="4.5" fill="#1144cc"/>
+  <!-- Lens inner -->
+  <circle cx="9" cy="7" r="2.5" fill="#4488ff"/>
+  <!-- Lens shine -->
+  <circle cx="7.2" cy="5.2" r="1.2" fill="white" opacity="0.55"/>
+
+  <!-- Status lights (top right) -->
+  <circle cx="24" cy="5" r="2" fill="#ff3333"/>
+  <circle cx="28.5" cy="5" r="1.4" fill="#ffcc00"/>
+
+  <!-- Screen (bottom right) -->
+  <rect x="22" y="19" width="8" height="6" rx="1.5" fill="#0a1a0a" stroke="#1a3a1a" stroke-width="0.8"/>
+  <rect x="23" y="20" width="6" height="4" rx="1" fill="#123a12"/>
+
+  <!-- D-pad style buttons (bottom left) -->
+  <rect x="1" y="19" width="15" height="4" rx="2" fill="#991100"/>
+  <rect x="1" y="25" width="9" height="4" rx="2" fill="#770e00"/>
+
+  <!-- Outline on top -->
+  <rect width="32" height="32" rx="6" fill="none" stroke="#e8e840" stroke-width="2" stroke-opacity="0.5"/>
+</svg>

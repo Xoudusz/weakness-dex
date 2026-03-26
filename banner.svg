@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 280">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d0d0f"/>
+      <stop offset="100%" stop-color="#17171a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="280" fill="url(#bg)"/>
+  <rect x="1" y="1" width="1198" height="278" rx="10" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+
+  <!-- Accent top/bottom lines -->
+  <line x1="0" y1="2" x2="1200" y2="2" stroke="#e8e840" stroke-width="2" opacity="0.35"/>
+  <line x1="0" y1="278" x2="1200" y2="278" stroke="#e8e840" stroke-width="2" opacity="0.35"/>
+
+  <!-- Favicon (Pokédex icon, inlined) -->
+  <g transform="translate(562, 24) scale(1.3)">
+    <rect width="32" height="32" rx="6" fill="#1a1a1a"/>
+    <path d="M0,6 Q0,0 6,0 L20,0 L20,15 L0,15 Z" fill="#cc1200"/>
+    <rect x="19" y="0" width="3" height="32" fill="#0d0d0d"/>
+    <rect x="0" y="14" width="32" height="3" fill="#0d0d0d"/>
+    <circle cx="9" cy="7" r="5.5" fill="#ffffff" opacity="0.15"/>
+    <circle cx="9" cy="7" r="4.5" fill="#1144cc"/>
+    <circle cx="9" cy="7" r="2.5" fill="#4488ff"/>
+    <circle cx="7.2" cy="5.2" r="1.2" fill="white" opacity="0.55"/>
+    <circle cx="24" cy="5" r="2" fill="#ff3333"/>
+    <circle cx="28.5" cy="5" r="1.4" fill="#ffcc00"/>
+    <rect x="22" y="19" width="8" height="6" rx="1.5" fill="#0a1a0a" stroke="#1a3a1a" stroke-width="0.8"/>
+    <rect x="23" y="20" width="6" height="4" rx="1" fill="#123a12"/>
+    <rect x="1" y="19" width="15" height="4" rx="2" fill="#991100"/>
+    <rect x="1" y="25" width="9" height="4" rx="2" fill="#770e00"/>
+    <rect width="32" height="32" rx="6" fill="none" stroke="#e8e840" stroke-width="2" stroke-opacity="0.5"/>
+  </g>
+
+  <!-- Title -->
+  <text x="600" y="115" font-family="'Courier New','Lucida Console',monospace"
+        font-size="54" font-weight="bold" fill="#e8e840"
+        text-anchor="middle" letter-spacing="6">WEAKNESSDEX</text>
+
+  <!-- Subtitle -->
+  <text x="600" y="146" font-family="'Courier New',monospace"
+        font-size="14" fill="#666"
+        text-anchor="middle" letter-spacing="3">POKÉMON TYPE WEAKNESS LOOKUP  ·  GEN 1–9  ·  7 LANGUAGES</text>
+
+  <!-- Type pills — row 1: normal fire water electric grass ice fighting poison ground -->
+  <!-- 9 pills × 90px + 8 gaps × 10px = 890px total, start x = 155 -->
+  <rect x="155" y="170" width="90" height="26" rx="5" fill="#6b6b5e"/>
+  <text x="200" y="187" font-family="'Courier New',monospace" font-size="11" fill="#e8e8d8" text-anchor="middle">Normal</text>
+
+  <rect x="255" y="170" width="90" height="26" rx="5" fill="#c0521a"/>
+  <text x="300" y="187" font-family="'Courier New',monospace" font-size="11" fill="#ffe8d0" text-anchor="middle">Fire</text>
+
+  <rect x="355" y="170" width="90" height="26" rx="5" fill="#1a4fa0"/>
+  <text x="400" y="187" font-family="'Courier New',monospace" font-size="11" fill="#d0e8ff" text-anchor="middle">Water</text>
+
+  <rect x="455" y="170" width="90" height="26" rx="5" fill="#b89000"/>
+  <text x="500" y="187" font-family="'Courier New',monospace" font-size="11" fill="#fff8c0" text-anchor="middle">Electric</text>
+
+  <rect x="555" y="170" width="90" height="26" rx="5" fill="#2d7a2d"/>
+  <text x="600" y="187" font-family="'Courier New',monospace" font-size="11" fill="#d0f0d0" text-anchor="middle">Grass</text>
+
+  <rect x="655" y="170" width="90" height="26" rx="5" fill="#2a8888"/>
+  <text x="700" y="187" font-family="'Courier New',monospace" font-size="11" fill="#c8f0f0" text-anchor="middle">Ice</text>
+
+  <rect x="755" y="170" width="90" height="26" rx="5" fill="#8a1a1a"/>
+  <text x="800" y="187" font-family="'Courier New',monospace" font-size="11" fill="#ffd8d8" text-anchor="middle">Fighting</text>
+
+  <rect x="855" y="170" width="90" height="26" rx="5" fill="#6a1a8a"/>
+  <text x="900" y="187" font-family="'Courier New',monospace" font-size="11" fill="#f0d0ff" text-anchor="middle">Poison</text>
+
+  <rect x="955" y="170" width="90" height="26" rx="5" fill="#8a6a10"/>
+  <text x="1000" y="187" font-family="'Courier New',monospace" font-size="11" fill="#fff0c0" text-anchor="middle">Ground</text>
+
+  <!-- Type pills — row 2: flying psychic bug rock ghost dragon dark steel fairy -->
+  <rect x="155" y="204" width="90" height="26" rx="5" fill="#4a3a9a"/>
+  <text x="200" y="221" font-family="'Courier New',monospace" font-size="11" fill="#e0d8ff" text-anchor="middle">Flying</text>
+
+  <rect x="255" y="204" width="90" height="26" rx="5" fill="#a01a5a"/>
+  <text x="300" y="221" font-family="'Courier New',monospace" font-size="11" fill="#ffd0e8" text-anchor="middle">Psychic</text>
+
+  <rect x="355" y="204" width="90" height="26" rx="5" fill="#4a5a10"/>
+  <text x="400" y="221" font-family="'Courier New',monospace" font-size="11" fill="#e8f0b0" text-anchor="middle">Bug</text>
+
+  <rect x="455" y="204" width="90" height="26" rx="5" fill="#6a5a18"/>
+  <text x="500" y="221" font-family="'Courier New',monospace" font-size="11" fill="#f0e8c0" text-anchor="middle">Rock</text>
+
+  <rect x="555" y="204" width="90" height="26" rx="5" fill="#3a2a6a"/>
+  <text x="600" y="221" font-family="'Courier New',monospace" font-size="11" fill="#ddd0ff" text-anchor="middle">Ghost</text>
+
+  <rect x="655" y="204" width="90" height="26" rx="5" fill="#2a0a9a"/>
+  <text x="700" y="221" font-family="'Courier New',monospace" font-size="11" fill="#d0c8ff" text-anchor="middle">Dragon</text>
+
+  <rect x="755" y="204" width="90" height="26" rx="5" fill="#2a2018"/>
+  <text x="800" y="221" font-family="'Courier New',monospace" font-size="11" fill="#d8d0c0" text-anchor="middle">Dark</text>
+
+  <rect x="855" y="204" width="90" height="26" rx="5" fill="#3a3a5a"/>
+  <text x="900" y="221" font-family="'Courier New',monospace" font-size="11" fill="#d8d8f0" text-anchor="middle">Steel</text>
+
+  <rect x="955" y="204" width="90" height="26" rx="5" fill="#902050"/>
+  <text x="1000" y="221" font-family="'Courier New',monospace" font-size="11" fill="#ffd0e0" text-anchor="middle">Fairy</text>
+</svg>

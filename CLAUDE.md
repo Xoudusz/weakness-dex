@@ -13,7 +13,7 @@ Scripts load in order via `<script>` tags: `data.js` → `api.js` → `render.js
 **`js/data.js`** — Pure data and helpers. No DOM, no fetch.
 - `typeChart`, `TC` (type colors), `GEN_OVERRIDES`, `REL_ABILITIES` — static game data
 - `STAT_CONFIG`, `MOVE_TABS` — config with `statKey`/`labelKey` for i18n
-- `currentLang`, `UI_STRINGS` (11 languages × ~40 keys), `t(key)` — i18n system
+- `currentLang`, `UI_STRINGS` (7 languages × ~40 keys), `t(key)` — i18n system
 - `getLocalizedName(entries, lang)` — finds a name in a PokéAPI `names[]` array, falls back to English
 - `getLocalizedTypeName(type, lang)` — wraps `getLocalizedName` using `typeNamesCache` from `api.js`
 
