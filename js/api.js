@@ -4,25 +4,27 @@ const spriteCache = {};
 const abilityDescCache = {};
 const moveDataCache = {};
 const varietiesCache = {};
-const formFlagsCache = {}; // {name: {is_cosmetic, is_battle_only}}
-const cosmeticForms = new Set();
+const showableFormsCache = {}; // speciesName → [varietyName, ...]
+const defaultFormCache = {};   // speciesName → default variety pokemon name
+const resolvedApiNameCache = {}; // speciesName → actual /pokemon/{name} that resolves
+
+function pickSprite(sprites) {
+  return sprites.front_default
+    || sprites.other?.showdown?.front_default
+    || sprites.other?.['official-artwork']?.front_default
+    || null;
+}
+function pickShinySprite(sprites) {
+  return sprites.front_shiny
+    || sprites.other?.showdown?.front_shiny
+    || null;
+}
 
 async function loadPokemonList() {
   try {
-    const r = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1302');
+    const r = await fetch('https://pokeapi.co/api/v2/pokemon-species?limit=1302');
     const d = await r.json();
-    // Normalize: replace API names with canonical names (e.g. giratina-altered → giratina)
-    const raw = d.results.map(p => API_NAME_MAP_REVERSE[p.name] || p.name);
-    const nameSet = new Set(raw);
-    allPokemon = [...nameSet]
-      .filter(n => !n.endsWith('-starter'))
-      .filter(n => {
-        // Filter alt-forms whose base is already in the list — accessible via form chips
-        for (const s of FORM_SUFFIXES) {
-          if (n.endsWith(s) && nameSet.has(n.slice(0, -s.length))) return false;
-        }
-        return true;
-      });
+    allPokemon = d.results.map(p => p.name).filter(n => !n.endsWith('-starter'));
   } catch(e) {}
 }
 loadPokemonList();
@@ -30,13 +32,26 @@ loadPokemonList();
 // Merged fetchPreview + fetchPokemonTypes — returns {sprite, types}
 async function fetchPokemonData(name) {
   if (spriteCache[name]) return spriteCache[name];
-  const apiName = API_NAME_MAP[name] || name; // e.g. 'giratina' → 'giratina-altered'
+  let apiName = resolvedApiNameCache[name] || name;
   try {
-    const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${apiName}`);
+    let r = await fetch(`https://pokeapi.co/api/v2/pokemon/${apiName}`);
+    if (!r.ok) {
+      // No direct /pokemon entry — some species (e.g. wormadam) only have suffixed variants.
+      // Resolve via species default variety.
+      const sr = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${name}`);
+      if (!sr.ok) return null;
+      const sd = await sr.json();
+      const def = sd.varieties.find(v => v.is_default);
+      if (!def) return null;
+      apiName = def.pokemon.name;
+      resolvedApiNameCache[name] = apiName;
+      r = await fetch(`https://pokeapi.co/api/v2/pokemon/${apiName}`);
+      if (!r.ok) return null;
+    }
     const d = await r.json();
-    const data = {sprite: d.sprites.front_default, types: d.types.map(t => t.type.name)};
+    const data = {sprite: pickSprite(d.sprites), types: d.types.map(t => t.type.name)};
     spriteCache[name] = data;
-    if (apiName !== name) spriteCache[apiName] = data; // also cache under API name
+    if (apiName !== name) spriteCache[apiName] = data;
     return data;
   } catch(e) { return null; }
 }
@@ -62,41 +77,32 @@ async function fetchAbilityDesc(name) {
   }
 }
 
-async function fetchFormFlags(formName) {
-  if (formFlagsCache[formName] !== undefined) return;
+const REGIONAL_SUFFIXES = ['-alola', '-galar', '-hisui', '-paldea'];
+
+async function fetchVarieties(speciesName) {
+  if (showableFormsCache[speciesName] !== undefined) return showableFormsCache[speciesName];
   try {
-    const r = await fetch(`https://pokeapi.co/api/v2/pokemon-form/${formName}`);
+    const r = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${speciesName}`);
     const d = await r.json();
-    formFlagsCache[formName] = {is_cosmetic: !!d.is_cosmetic, is_battle_only: !!d.is_battle_only};
-    if (d.is_cosmetic) cosmeticForms.add(formName);
-  } catch(e) { formFlagsCache[formName] = {is_cosmetic: false, is_battle_only: false}; }
-}
 
-async function fetchVarieties(pokemonId) {
-  try {
-    const r = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemonId}`);
-    const d = await r.json();
-    const speciesName = d.name;
-    const defaultEntry = d.varieties.find(v => v.is_default);
-    const defaultRawName = defaultEntry ? defaultEntry.pokemon.name : speciesName;
+    const allVNames = d.varieties.map(v => v.pokemon.name);
+    varietiesCache[speciesName] = allVNames;
+    for (const v of allVNames) varietiesCache[v] = allVNames;
 
-    // Normalize: replace default variety name with species name if they differ
-    // e.g. darmanitan-standard → darmanitan, giratina-altered → giratina
-    const varieties = d.varieties.map(v =>
-      (v.pokemon.name === defaultRawName && v.pokemon.name !== speciesName) ? speciesName : v.pokemon.name
-    );
+    const defaultV = d.varieties.find(v => v.is_default);
+    if (defaultV) defaultFormCache[speciesName] = defaultV.pokemon.name;
 
-    // Populate cache for species name, original default name (alias), and all varieties
-    varietiesCache[speciesName] = varieties;
-    if (defaultRawName !== speciesName) varietiesCache[defaultRawName] = varieties;
-    for (const v of varieties) varietiesCache[v] = varieties;
+    // Show all non-default, non-regional varieties — cosmetic forms are never separate varieties
+    const showable = d.varieties
+      .filter(v => !v.is_default && !REGIONAL_SUFFIXES.some(s => v.pokemon.name.includes(s)))
+      .map(v => v.pokemon.name);
 
-    // Fetch form flags for all non-default varieties (await so flags are ready before render)
-    const nonDefault = varieties.filter(v => v !== speciesName);
-    await Promise.all(nonDefault.map(fetchFormFlags));
-
-    return varieties;
-  } catch(e) { return []; }
+    showableFormsCache[speciesName] = showable;
+    return showable;
+  } catch(e) {
+    showableFormsCache[speciesName] = [];
+    return [];
+  }
 }
 
 async function fetchMoveDetails(moveName) {

@@ -79,13 +79,6 @@ const REL_ABILITIES = {
   'wonder-guard':   {special:'wonderguard'},
 };
 
-const FORM_SUFFIXES = ['-mega','-mega-x','-mega-y','-gmax','-primal','-origin','-therian','-black','-white','-resolute','-pirouette','-ash','-eternamax'];
-const FORM_LABELS = {
-  '-mega':'Mega', '-mega-x':'Mega X', '-mega-y':'Mega Y', '-gmax':'G-Max',
-  '-primal':'Primal', '-origin':'Origin', '-therian':'Therian', '-black':'Black',
-  '-white':'White', '-resolute':'Resolute', '-pirouette':'Pirouette', '-ash':'Ash',
-  '-eternamax':'Eternamax',
-};
 
 const STAT_CONFIG = [
   {key:'hp',             label:'HP',    color:'#4caf50'},
@@ -105,19 +98,3 @@ const MOVE_TABS = [
   {key:'form-change', label:'Prior Evo'},
 ];
 
-// Pokemon whose default form in PokéAPI has a suffix (e.g. giratina-altered).
-// Maps canonical display name → actual PokéAPI /pokemon/{name} endpoint.
-const API_NAME_MAP = {
-  'giratina':  'giratina-altered',
-  'tornadus':  'tornadus-incarnate',
-  'thundurus': 'thundurus-incarnate',
-  'landorus':  'landorus-incarnate',
-  'enamorus':  'enamorus-incarnate',
-  'basculin':  'basculin-red-striped',
-  'meloetta':  'meloetta-aria',
-  'keldeo':    'keldeo-ordinary',
-};
-// Reverse: 'giratina-altered' → 'giratina'
-const API_NAME_MAP_REVERSE = Object.fromEntries(
-  Object.entries(API_NAME_MAP).map(([k, v]) => [v, k])
-);

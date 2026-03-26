@@ -1,6 +1,5 @@
 let ddIndex = -1, debounceTimer;
 let currentGen = 0, currentAbilityOverride = '';
-let showBattleForms = false;
 let currentMovesData = null, currentMovesTab = 'level-up', currentAvailableTabs = [];
 
 // --- History ---
@@ -138,7 +137,6 @@ function toggleAdvanced() {
 
 function setGen(val) { currentGen = parseInt(val); renderFeed(); }
 function setAbilityOverride(val) { currentAbilityOverride = val; renderFeed(); }
-function toggleBattleForms(val) { showBattleForms = val; renderFeed(); }
 function bringToTop(name) { lookup(name); }
 
 // --- Lookup ---
@@ -159,21 +157,33 @@ async function lookup(name) {
   feed.prepend(ld);
 
   try {
-    const apiName = API_NAME_MAP[name] || name; // e.g. 'giratina' → 'giratina-altered'
-    const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${apiName}`);
-    if (!r.ok) throw new Error();
+    let apiName = resolvedApiNameCache[name] || name;
+    let r = await fetch(`https://pokeapi.co/api/v2/pokemon/${apiName}`);
+    if (!r.ok) {
+      // No direct /pokemon entry — resolve via species default variety
+      const sr = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${name}`);
+      if (!sr.ok) throw new Error();
+      const sd = await sr.json();
+      const def = sd.varieties.find(v => v.is_default);
+      if (!def) throw new Error();
+      apiName = def.pokemon.name;
+      resolvedApiNameCache[name] = apiName;
+      r = await fetch(`https://pokeapi.co/api/v2/pokemon/${apiName}`);
+      if (!r.ok) throw new Error();
+    }
     const d = await r.json();
     // Normalize name: API may return "darmanitan-standard" or "giratina-altered" for base species.
     // If user searched the species name directly, use the clean species name as canonical entry name.
     const speciesName = d.species.name;
-    const entryName = (d.name !== speciesName && name === speciesName) ? speciesName : d.name;
     const pdata = {sprite: d.sprites.front_default, types: d.types.map(t => t.type.name)};
-    spriteCache[entryName] = pdata;
+    spriteCache[speciesName] = pdata;
+    spriteCache[d.name] = pdata;
     const speciesId = parseInt(d.species.url.split('/').filter(Boolean).pop());
     const entry = {
-      name: entryName, id: d.id, speciesName, speciesId,
-      sprite: d.sprites.front_default,
-      shiny_sprite: d.sprites.front_shiny,
+      name: speciesName, id: d.id, speciesName, speciesId,
+      activeForm: d.name,
+      sprite: pickSprite(d.sprites),
+      shiny_sprite: pickShinySprite(d.sprites),
       types: d.types.map(t => t.type.name),
       abilities: d.abilities.map(a => ({name: a.ability.name, is_hidden: a.is_hidden})),
       stats: d.stats,
@@ -190,13 +200,54 @@ async function lookup(name) {
   }
 }
 
+// --- Form switch (in-place update, no new history entry) ---
+
+async function switchForm(speciesName, formName) {
+  const h = getHistory();
+  const idx = h.findIndex(e => e.name === speciesName);
+  if (idx < 0) return;
+  let apiName = resolvedApiNameCache[formName] || formName;
+  try {
+    let r = await fetch(`https://pokeapi.co/api/v2/pokemon/${apiName}`);
+    if (!r.ok) {
+      const sr = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${formName}`);
+      if (!sr.ok) throw new Error();
+      const sd = await sr.json();
+      const def = sd.varieties.find(v => v.is_default);
+      if (!def) throw new Error();
+      apiName = def.pokemon.name;
+      resolvedApiNameCache[formName] = apiName;
+      r = await fetch(`https://pokeapi.co/api/v2/pokemon/${apiName}`);
+      if (!r.ok) throw new Error();
+    }
+    const d = await r.json();
+    const sprite = pickSprite(d.sprites) || (spriteCache[speciesName] || {}).sprite || null;
+    const shiny_sprite = pickShinySprite(d.sprites) || (spriteCache[speciesName] || {}).shiny_sprite || null;
+    const pdata = {sprite, types: d.types.map(t => t.type.name)};
+    spriteCache[apiName] = pdata;
+    spriteCache[formName] = pdata;
+    h[idx] = {
+      ...h[idx],
+      activeForm: d.name,
+      sprite,
+      shiny_sprite,
+      types: d.types.map(t => t.type.name),
+      abilities: d.abilities.map(a => ({name: a.ability.name, is_hidden: a.is_hidden})),
+      stats: d.stats,
+      shiny: false,
+    };
+    localStorage.setItem('wdex_h14', JSON.stringify(h));
+    renderFeed();
+  } catch(e) {}
+}
+
 // --- Autocomplete ---
 
 const inp = document.getElementById('inp');
 const dd = document.getElementById('dropdown');
 
 async function updateDropdown(val) {
-  const matches = allPokemon.filter(n => n.includes(val) && !cosmeticForms.has(n)).slice(0, 7);
+  const matches = allPokemon.filter(n => n.includes(val)).slice(0, 7);
   if (!matches.length) { closeDropdown(); return; }
   ddIndex = -1;
   dd.innerHTML = matches.map((m, i) => {

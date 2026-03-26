@@ -3,34 +3,12 @@ let tooltipEnabledAt = 0;
 
 // --- Form helpers ---
 
-function getFormLabel(name) {
-  for (const s of FORM_SUFFIXES) { if (name.endsWith(s)) return FORM_LABELS[s] || s.slice(1); }
-  const parts = name.split('-');
-  if (parts.length > 1) return parts.slice(1).map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
-  return name;
+function getFormLabel(varietyName, speciesName) {
+  const prefix = (speciesName || '') + '-';
+  const suffix = varietyName.startsWith(prefix) ? varietyName.slice(prefix.length) : varietyName;
+  return suffix.split('-').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ') || 'Base';
 }
 
-function findAltForms(name) {
-  if (varietiesCache[name]) {
-    return varietiesCache[name].filter(v => v !== name
-      && !cosmeticForms.has(v)
-      && !(formFlagsCache[v] && formFlagsCache[v].is_battle_only));
-  }
-  let base = name;
-  for (const s of FORM_SUFFIXES) { if (name.endsWith(s)) { base = name.slice(0, -(s.length)); break; } }
-  return allPokemon.filter(n => n !== name && FORM_SUFFIXES.some(s => n === base + s));
-}
-
-function getBaseName(name) {
-  if (varietiesCache[name]) return varietiesCache[name][0];
-  for (const s of FORM_SUFFIXES) { if (name.endsWith(s)) return name.slice(0, -(s.length)); }
-  return name;
-}
-
-function isAltForm(name) {
-  if (varietiesCache[name]) return varietiesCache[name][0] !== name;
-  return FORM_SUFFIXES.some(s => name.endsWith(s));
-}
 
 // --- Evo condition helpers ---
 
@@ -229,40 +207,27 @@ function buildCurrentCard(entry) {
   const statsHtml = renderStats(stats);
 
   // Forms bar
-  const altForms = findAltForms(name);
-  const isAlt = isAltForm(name);
-  const base = getBaseName(name);
-  const baseForForms = isAlt ? base : name;
-  const regularForms = isAlt ? findAltForms(base) : altForms;
-
-  // Battle-only forms — shown only when showBattleForms toggle is active
-  const allVarieties = varietiesCache[baseForForms] || [];
-  const battleForms = showBattleForms
-    ? allVarieties.filter(v => v !== baseForForms && formFlagsCache[v] && formFlagsCache[v].is_battle_only)
-    : [];
-
-  const hasAnyForms = regularForms.length || isAlt || battleForms.length;
+  const speciesNameForForms = entry.speciesName || name;
+  const showable = showableFormsCache[speciesNameForForms] || [];
+  const activeForm = entry.activeForm || name;
+  const isAlt = showable.includes(activeForm);
   let actionBarHtml = '';
 
-  if (hasAnyForms) {
-    const baseData = spriteCache[base] || {};
+  if (showable.length > 0) {
+    const baseData = spriteCache[speciesNameForForms] || {};
     const baseImg = baseData.sprite ? `<img src="${baseData.sprite}" />` : '';
-    let chips = `<div class="form-chip${!isAlt ? ' active' : ''}" data-form-name="${base}" onclick="lookup('${base}')"><span class="form-swap">⇄</span>${baseImg}Base</div>`;
+    const defaultFormName = defaultFormCache[speciesNameForForms] || speciesNameForForms;
+    const baseLabel = defaultFormName === speciesNameForForms ? 'Base' : getFormLabel(defaultFormName, speciesNameForForms);
+    let chips = `<div class="form-chip${!isAlt ? ' active' : ''}" data-form-name="${speciesNameForForms}" onclick="switchForm('${speciesNameForForms}', '${speciesNameForForms}')"><span class="form-swap">⇄</span>${baseImg}${baseLabel}</div>`;
 
-    chips += regularForms.map(f => {
+    chips += showable.map(f => {
       const fd = spriteCache[f] || {};
       const fi = fd.sprite ? `<img src="${fd.sprite}" />` : '';
-      return `<div class="form-chip${f === name ? ' active' : ''}" data-form-name="${f}" onclick="lookup('${f}')"><span class="form-swap">⇄</span>${fi}${getFormLabel(f)}</div>`;
-    }).join('');
-
-    chips += battleForms.map(f => {
-      const fd = spriteCache[f] || {};
-      const fi = fd.sprite ? `<img src="${fd.sprite}" />` : '';
-      return `<div class="form-chip${f === name ? ' active' : ''}" data-form-name="${f}" onclick="lookup('${f}')"><span class="form-swap">⇄</span>${fi}${getFormLabel(f)}<span class="battle-tag">battle</span></div>`;
+      return `<div class="form-chip${f === activeForm ? ' active' : ''}" data-form-name="${f}" onclick="switchForm('${speciesNameForForms}', '${f}')"><span class="form-swap">⇄</span>${fi}${getFormLabel(f, speciesNameForForms)}</div>`;
     }).join('');
 
     // Lazily load sprites for form chips that don't have them yet
-    [base, ...regularForms, ...battleForms].forEach(async f => {
+    [speciesNameForForms, ...showable].forEach(async f => {
       if (spriteCache[f] && spriteCache[f].sprite) return;
       const data = await fetchPokemonData(f);
       if (!data) return;
@@ -272,9 +237,9 @@ function buildCurrentCard(entry) {
       });
     });
 
-    actionBarHtml = `<div class="card-action-bar"><span class="forms-label">FORMS</span>${chips}<button class="moves-btn" onclick="openMoves('${name}')">📋 Moves</button></div>`;
+    actionBarHtml = `<div class="card-action-bar"><span class="forms-label">FORMS</span>${chips}<button class="moves-btn" onclick="openMoves('${activeForm}')">📋 Moves</button></div>`;
   } else {
-    actionBarHtml = `<div class="card-action-bar"><button class="moves-btn" onclick="openMoves('${name}')">📋 Moves</button></div>`;
+    actionBarHtml = `<div class="card-action-bar"><button class="moves-btn" onclick="openMoves('${activeForm}')">📋 Moves</button></div>`;
   }
 
   return `<div class="poke-card is-current" id="card-current">
