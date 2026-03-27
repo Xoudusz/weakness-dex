@@ -58,11 +58,11 @@ function calcWeaknesses(types, abilityKey) {
     let m = 1;
     if (am && am.special === 'wonderguard') {
       let b = 1;
-      for (const def of et) { const row = typeChart[atk] || {}; b *= row[def] !== undefined ? row[def] : 1; }
+      for (const def of et) { const row = typeChart[def] || {}; b *= row[atk] !== undefined ? row[atk] : 1; }
       all[atk] = b > 1 ? b : 0;
       continue;
     }
-    for (const def of et) { const row = typeChart[atk] || {}; m *= row[def] !== undefined ? row[def] : 1; }
+    for (const def of et) { const row = typeChart[def] || {}; m *= row[atk] !== undefined ? row[atk] : 1; }
     if (am) {
       if (am.immune && am.immune.includes(atk)) m = 0;
       if (am.halve && am.halve.includes(atk)) m *= 0.5;
@@ -105,9 +105,9 @@ function renderGroups(g, sm = false) {
   if (w4.length) html += `<div class="weakness-block"><div class="section-label x4">${t('weak4')}</div><div class="badges">${w4.map(tp => badge(tp, '×4', sm)).join('')}</div></div>`;
   if (w2.length) html += `<div class="weakness-block"><div class="section-label x2">${t('weak2')}</div><div class="badges">${w2.map(tp => badge(tp, '×2', sm)).join('')}</div></div>`;
   if ((w4.length || w2.length) && (imm.length || r2.length || r4.length)) html += '<hr class="divider-h">';
-  if (imm.length) html += `<div class="weakness-block"><div class="section-label x0">${t('immune')}</div><div class="badges">${imm.map(tp => badge(tp, '×0', sm)).join('')}</div></div>`;
   if (r2.length) html += `<div class="weakness-block"><div class="section-label half">${t('resist2')}</div><div class="badges">${r2.map(tp => badge(tp, '×½', sm)).join('')}</div></div>`;
   if (r4.length) html += `<div class="weakness-block"><div class="section-label quarter">${t('resist4')}</div><div class="badges">${r4.map(tp => badge(tp, '×¼', sm)).join('')}</div></div>`;
+  if (imm.length) html += `<div class="weakness-block"><div class="section-label x0">${t('immune')}</div><div class="badges">${imm.map(tp => badge(tp, '×0', sm)).join('')}</div></div>`;
   if (!html) html = `<p class="empty-hint">${t('noMatchups')}</p>`;
   return html;
 }
