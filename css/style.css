@@ -45,6 +45,8 @@ select:focus{border-color:var(--accent);}
 .poke-card.is-history{cursor:pointer;}
 .poke-card.is-history:hover{border-color:var(--border2);}
 .poke-card.is-current{border-color:rgba(232,232,64,.18);}
+.poke-card.is-loading{animation:card-pulse 1s ease-in-out infinite;}
+@keyframes card-pulse{0%,100%{border-color:rgba(232,232,64,.18);}50%{border-color:rgba(232,232,64,.45);}}
 
 /* Current card hero */
 .current-hero{display:grid;grid-template-columns:180px 1fr;min-height:0;}

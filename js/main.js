@@ -220,10 +220,16 @@ async function lookup(name) {
   hideTooltip();
 
   const feed = document.getElementById('feed');
-  const ld = document.createElement('div');
-  ld.className = 'poke-card is-current';
-  ld.innerHTML = '<div class="spinner"></div>';
-  feed.prepend(ld);
+  const prevCard = document.getElementById('card-current');
+  let ld = null;
+  if (prevCard) {
+    prevCard.classList.add('is-loading');
+  } else {
+    ld = document.createElement('div');
+    ld.className = 'poke-card is-current';
+    ld.innerHTML = '<div class="spinner"></div>';
+    feed.prepend(ld);
+  }
 
   try {
     const d = await fetchResolvedPokemon(name);
@@ -245,12 +251,12 @@ async function lookup(name) {
     // Use species name (not pokemon variant ID) so fetchVarieties works for alt forms like giratina-origin
     await fetchVarieties(speciesName);
     saveToHistory(entry);
-    ld.remove();
+    if (ld) ld.remove();
     rebuildLocalizedIndex();
     renderFeed();
     Promise.all(entry.abilities.map(a => fetchAbilityDesc(a.name, currentLang))).then(renderFeed);
   } catch(e) {
-    ld.remove();
+    if (ld) ld.remove(); else if (prevCard) prevCard.classList.remove('is-loading');
     document.getElementById('search-error').innerHTML = `<p class="error-msg">Pokémon "${name}" not found. Check the spelling?</p>`;
   }
 }
