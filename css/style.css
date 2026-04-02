@@ -58,7 +58,7 @@ select:focus{border-color:var(--accent);}
 .hero-num{font-size:11px;color:var(--muted2);}
 .hero-name{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--text);text-transform:capitalize;text-align:center;line-height:1.7;}
 .hero-types{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;}
-.type-pill{padding:2px 9px;border-radius:999px;font-weight:600;text-transform:capitalize;letter-spacing:.02em;font-size:10px;}
+.type-pill{padding:2px 9px;border-radius:999px;font-weight:600;text-transform:capitalize;letter-spacing:.02em;font-size:10px;display:inline-block;min-width:56px;text-align:center;}
 .hero-identity{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;}
 .hero-abilities{width:100%;margin-top:6px;}
 .hero-abilities-label{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted);letter-spacing:.06em;margin-bottom:7px;text-align:center;}
