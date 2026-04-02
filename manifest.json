@@ -1,0 +1,16 @@
+{
+  "name": "Weakness Dex",
+  "short_name": "WeaknessDex",
+  "description": "Look up Pokémon type weaknesses, resistances, and immunities.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d0d0f",
+  "theme_color": "#0d0d0f",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ]
+}

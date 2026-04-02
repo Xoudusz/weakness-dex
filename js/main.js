@@ -12,16 +12,24 @@ function getHistory() {
 function saveToHistory(e) {
   let h = getHistory().filter(x => x.name !== e.name);
   h.unshift(e);
-  localStorage.setItem('wdex_h14', JSON.stringify(h));
+  localStorage.setItem('wdex_h14', JSON.stringify(h.slice(0, 20)));
 }
 
 // --- Feed ---
+
+function clearHistory() {
+  const current = getHistory()[0];
+  localStorage.setItem('wdex_h14', JSON.stringify(current ? [current] : []));
+  renderFeed();
+}
 
 function renderFeed() {
   const history = getHistory();
   const feed = document.getElementById('feed');
   if (!history.length) { feed.innerHTML = ''; return; }
-  feed.innerHTML = buildCurrentCard(history[0]) + history.slice(1).map(e => buildHistoryCard(e)).join('');
+  const histCards = history.slice(1).map(e => buildHistoryCard(e)).join('');
+  const clearBtn = histCards ? `<div class="clear-history-row"><button class="clear-history-btn" onclick="clearHistory()">✕ ${t('clearHistory')}</button></div>` : '';
+  feed.innerHTML = buildCurrentCard(history[0]) + clearBtn + histCards;
   attachTooltipEvents();
   loadEvoChain(history[0]);
 }
@@ -133,7 +141,11 @@ function closeMoves(e) {
   if (!e || e.target === overlay) overlay.style.display = 'none';
 }
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') document.getElementById('moves-overlay').style.display = 'none'; });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('moves-overlay').style.display = 'none';
+  // Press '/' or 's' anywhere to jump to search ('/' = Shift+7 on QWERTZ)
+  if ((e.key === '/' || e.key === 's') && document.activeElement !== inp && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); inp.focus(); }
+});
 
 // --- Advanced panel ---
 
@@ -258,6 +270,7 @@ async function lookup(name) {
     if (ld) ld.remove();
     rebuildLocalizedIndex();
     renderFeed();
+    window.scrollTo({top: 0, behavior: 'smooth'});
     Promise.all(entry.abilities.map(a => fetchAbilityDesc(a.name, currentLang))).then(renderFeed);
   } catch(e) {
     if (ld) ld.remove(); else if (prevCard) prevCard.classList.remove('is-loading');

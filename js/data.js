@@ -152,6 +152,7 @@ const UI_STRINGS = {
     advancedBtn:'Advanced', genLabel:'Generation', latestGen:'Latest (Gen 9)',
     abilityLabel:'Ability override', noneOption:'— none —', languageLabel:'Language',
     searchHint:'No results — try in English',
+    clearHistory:'Clear history',
   },
   de: {
     weaknesses:'SCHWÄCHEN', baseStats:'BASISWERTE', abilities:'FÄHIGKEITEN',
@@ -175,6 +176,7 @@ const UI_STRINGS = {
     advancedBtn:'Erweitert', genLabel:'Generation', latestGen:'Aktuell (Gen 9)',
     abilityLabel:'Fähigkeit', noneOption:'— keine —', languageLabel:'Sprache',
     searchHint:'Keine Treffer – auf Englisch versuchen',
+    clearHistory:'Verlauf löschen',
   },
   fr: {
     weaknesses:'FAIBLESSES', baseStats:'STATS DE BASE', abilities:'TALENTS',
@@ -198,6 +200,7 @@ const UI_STRINGS = {
     advancedBtn:'Avancé', genLabel:'Génération', latestGen:'Récent (Gen 9)',
     abilityLabel:'Remplacer talent', noneOption:'— aucun —', languageLabel:'Langue',
     searchHint:'Aucun résultat — essayer en anglais',
+    clearHistory:'Effacer l\'historique',
   },
   es: {
     weaknesses:'DEBILIDADES', baseStats:'ESTADÍSTICAS BASE', abilities:'HABILIDADES',
@@ -221,6 +224,7 @@ const UI_STRINGS = {
     advancedBtn:'Avanzado', genLabel:'Generación', latestGen:'Actual (Gen 9)',
     abilityLabel:'Anular hab.', noneOption:'— ninguna —', languageLabel:'Idioma',
     searchHint:'Sin resultados — prueba en inglés',
+    clearHistory:'Borrar historial',
   },
   it: {
     weaknesses:'DEBOLEZZE', baseStats:'STATISTICHE', abilities:'ABILITÀ',
@@ -244,6 +248,7 @@ const UI_STRINGS = {
     advancedBtn:'Avanzato', genLabel:'Generazione', latestGen:'Attuale (Gen 9)',
     abilityLabel:'Forza abilità', noneOption:'— nessuna —', languageLabel:'Lingua',
     searchHint:'Nessun risultato — prova in inglese',
+    clearHistory:'Cancella cronologia',
   },
   ja: {
     weaknesses:'弱点', baseStats:'種族値', abilities:'特性',
@@ -267,6 +272,7 @@ const UI_STRINGS = {
     advancedBtn:'詳細', genLabel:'世代', latestGen:'最新 (Gen 9)',
     abilityLabel:'とくせい変更', noneOption:'— なし —', languageLabel:'言語',
     searchHint:'結果なし — 英語で検索してみて',
+    clearHistory:'履歴を消す',
   },
   ko: {
     weaknesses:'약점', baseStats:'종족값', abilities:'특성',
@@ -290,6 +296,7 @@ const UI_STRINGS = {
     advancedBtn:'고급', genLabel:'세대', latestGen:'최신 (Gen 9)',
     abilityLabel:'특성 변경', noneOption:'— 없음 —', languageLabel:'언어',
     searchHint:'결과 없음 — 영어로 검색해 보세요',
+    clearHistory:'기록 지우기',
   },
   'zh-Hans': {
     weaknesses:'弱点', baseStats:'种族值', abilities:'特性',
@@ -313,6 +320,7 @@ const UI_STRINGS = {
     advancedBtn:'高级', genLabel:'世代', latestGen:'最新 (Gen 9)',
     abilityLabel:'覆盖特性', noneOption:'— 无 —', languageLabel:'语言',
     searchHint:'无结果 — 请用英文搜索',
+    clearHistory:'清除历史',
   },
   'zh-Hant': {
     weaknesses:'弱點', baseStats:'種族值', abilities:'特性',
@@ -336,6 +344,7 @@ const UI_STRINGS = {
     advancedBtn:'高級', genLabel:'世代', latestGen:'最新 (Gen 9)',
     abilityLabel:'覆蓋特性', noneOption:'— 無 —', languageLabel:'語言',
     searchHint:'無結果 — 請用英文搜尋',
+    clearHistory:'履歴を消す',
   },
   'ja-Hrkt': {
     weaknesses:'じゃくてん', baseStats:'しゅぞくち', abilities:'とくせい',
@@ -359,6 +368,7 @@ const UI_STRINGS = {
     advancedBtn:'しょうさい', genLabel:'せだい', latestGen:'さいしん (Gen 9)',
     abilityLabel:'とくせいへんこう', noneOption:'— なし —', languageLabel:'げんご',
     searchHint:'けっかなし — えいごでけんさく',
+    clearHistory:'りれきをけす',
   },
   roomaji: {
     weaknesses:'Jakuten', baseStats:'Shuzoku-chi', abilities:'Tokusei',
@@ -382,6 +392,7 @@ const UI_STRINGS = {
     advancedBtn:'Shōsai', genLabel:'Sedai', latestGen:'Saishin (Gen 9)',
     abilityLabel:'Tokusei henkou', noneOption:'— nashi —', languageLabel:'Gengo',
     searchHint:'Kekka nashi — Eigo de kensaku',
+    clearHistory:'Rireki wo kesu',
   },
 };
 

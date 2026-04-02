@@ -279,7 +279,7 @@ function buildCurrentCard(entry) {
     <div class="current-hero">
       <div class="hero-left">
         <div class="hero-identity">
-          <div class="sprite-wrap"><img class="poke-img-current" id="current-sprite" src="${activeSprite || ''}" alt="${name}"/><span class="shiny-badge${shiny ? ' active' : ''}" id="shiny-toggle" onclick="toggleShiny('${name}')">✦</span></div>
+          <div class="sprite-wrap"><img class="poke-img-current" id="current-sprite" src="${activeSprite || ''}" alt="${name}" onerror="this.style.visibility='hidden'"/><span class="shiny-badge${shiny ? ' active' : ''}" id="shiny-toggle" onclick="toggleShiny('${name}')">✦</span></div>
           <div class="hero-num">#${num}</div>
           <div class="hero-name">${displayName}</div>
           <div class="hero-types">${typePills}</div>
@@ -306,13 +306,13 @@ function buildHistoryCard(entry) {
   const abilityKey = currentAbilityOverride || (abilities ? (abilities.find(a => REL_ABILITIES[a.name]) || {}).name : null);
   const g = group(calcWeaknesses(types, abilityKey || null));
   const weakBadges = [...g.w4.map(t => badge(t, '×4', true)), ...g.w2.map(t => badge(t, '×2', true))];
-  return `<div class="poke-card is-history" onclick="lookup('${name}')"><div class="history-inner"><img class="poke-img-small" src="${sprite || ''}" alt="${displayName}"/><div class="history-meta"><div class="history-top"><span class="history-num">#${num}</span><span class="history-name">${displayName}</span><div class="history-types">${typePills}</div></div>${weakBadges.length ? `<div class="history-weaknesses">${weakBadges.join('')}</div>` : ''}</div></div></div>`;
+  return `<div class="poke-card is-history" onclick="lookup('${name}')"><div class="history-inner"><img class="poke-img-small" src="${sprite || ''}" alt="${displayName}" onerror="this.style.visibility='hidden'"/><div class="history-meta"><div class="history-top"><span class="history-num">#${num}</span><span class="history-name">${displayName}</span><div class="history-types">${typePills}</div></div>${weakBadges.length ? `<div class="history-weaknesses">${weakBadges.join('')}</div>` : ''}</div></div></div>`;
 }
 
 // --- Evo chain ---
 
 function evoMonEl(name, spriteUrl, types, isCurrent, condition) {
-  const img = spriteUrl ? `<img src="${spriteUrl}"/>` : `<div style="width:48px;height:48px;background:var(--surface2);border-radius:50%"></div>`;
+  const img = spriteUrl ? `<img src="${spriteUrl}" onerror="this.style.visibility='hidden'"/>` : `<div style="width:48px;height:48px;background:var(--surface2);border-radius:50%"></div>`;
   const tp = types && types[0] ? `<span class="evo-type" style="background:${(TC[types[0]] || {bg:'#444'}).bg};color:${(TC[types[0]] || {text:'#eee'}).text}">${getLocalizedTypeName(types[0], currentLang)}</span>` : '';
   const cond = condition ? `<span class="evo-cond">${condition}</span>` : '';
   const evoDisplayName = getLocalizedName(localizedNamesCache[name], currentLang) || name;

@@ -192,3 +192,8 @@ select:focus{border-color:var(--accent);}
   .evo-grid{flex-wrap:wrap;}
   .moves-modal{max-height:90vh;}
 }
+
+/* Clear history */
+.clear-history-row{display:flex;justify-content:flex-end;padding:2px 0;}
+.clear-history-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:color .15s,background .15s;}
+.clear-history-btn:hover{color:var(--text);background:var(--surface2);}

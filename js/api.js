@@ -16,10 +16,13 @@ const evoChainCache = {};       // chainId → chain data object
 // Bump the version suffix to force a full cache bust on next load (e.g. after a data shape change).
 const CACHE_LS_KEY = 'wdex_apicache_v1';
 
+const CACHE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
 function loadCaches() {
   try {
     const saved = JSON.parse(localStorage.getItem(CACHE_LS_KEY) || 'null');
     if (!saved) return;
+    if (saved.savedAt && Date.now() - saved.savedAt > CACHE_MAX_AGE_MS) return;
     Object.assign(spriteCache,          saved.sprite        || {});
     Object.assign(abilityDescCache,     saved.ability       || {});
     Object.assign(moveDataCache,        saved.move          || {});
@@ -38,6 +41,7 @@ function loadCaches() {
 function saveCaches() {
   try {
     localStorage.setItem(CACHE_LS_KEY, JSON.stringify({
+      savedAt:      Date.now(),
       sprite:       spriteCache,
       ability:      abilityDescCache,
       move:         moveDataCache,
