@@ -4,6 +4,7 @@ let currentMovesData = null, currentMovesTab = 'level-up', currentAvailableTabs 
 
 // --- History ---
 
+// Versioned key — increment the number to clear history saved with an incompatible shape.
 function getHistory() {
   try { return JSON.parse(localStorage.getItem('wdex_h14') || '[]'); } catch(e) { return []; }
 }
@@ -143,7 +144,9 @@ function toggleAdvanced() {
 
 function setGen(val) { currentGen = parseInt(val); renderFeed(); }
 function setAbilityOverride(val) { currentAbilityOverride = val; renderFeed(); }
-let localizedSearchIndex = new Map(); // localizedLowerName → speciesName
+// Maps lowercased localized names → species name. Rebuilt incrementally as prefetchLocalizedNames()
+// progresses through batches, so search works before the full prefetch completes.
+let localizedSearchIndex = new Map();
 
 function rebuildLocalizedIndex() {
   localizedSearchIndex = new Map();
@@ -183,7 +186,6 @@ function setLang(val) {
   if (missing.length) Promise.all(missing.map(e => fetchVarieties(e.speciesName))).then(() => { rebuildLocalizedIndex(); renderFeed(); });
   prefetchLocalizedNames();
 }
-function bringToTop(name) { lookup(name); }
 
 const LANG_LIST_LS_KEY = 'wdex_lang_list_v1';
 
@@ -222,6 +224,8 @@ async function lookup(name) {
   const feed = document.getElementById('feed');
   const prevCard = document.getElementById('card-current');
   let ld = null;
+  // If a card is already showing, pulse its border instead of replacing it with a spinner —
+  // avoids layout shift. Spinner is only used on the very first lookup.
   if (prevCard) {
     prevCard.classList.add('is-loading');
   } else {

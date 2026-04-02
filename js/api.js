@@ -13,6 +13,7 @@ const typeNamesCache = {};      // typeName → names[] from /type/{name}
 const evoChainUrlCache = {};    // speciesName → evolution_chain URL string
 const evoChainCache = {};       // chainId → chain data object
 
+// Bump the version suffix to force a full cache bust on next load (e.g. after a data shape change).
 const CACHE_LS_KEY = 'wdex_apicache_v1';
 
 function loadCaches() {
@@ -128,6 +129,9 @@ async function fetchPokemonData(name) {
   } catch(e) { return null; }
 }
 
+// Fetches ability description for both the requested lang and 'en' in one call.
+// Prefers effect_entries (longer, canonical) over flavor_text_entries (shorter, game-specific).
+// Falls back to 'en' if the requested lang has no entry.
 async function fetchAbilityDesc(name, lang = currentLang) {
   const key = `${name}__${lang}`;
   if (abilityDescCache[key] !== undefined) return abilityDescCache[key];
@@ -153,6 +157,7 @@ async function fetchAbilityDesc(name, lang = currentLang) {
 const REGIONAL_SUFFIXES = ['-alola', '-galar', '-hisui', '-paldea'];
 
 async function fetchVarieties(speciesName) {
+  // Both conditions must be set — if either is missing the previous fetch was partial and must re-run.
   if (showableFormsCache[speciesName] !== undefined && localizedNamesCache[speciesName] !== undefined) return showableFormsCache[speciesName];
   try {
     const r = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${speciesName}`);

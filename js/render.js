@@ -1,4 +1,5 @@
 const TOOLTIP_DELAY = 600;
+// Reset to Date.now() on each lookup so tooltips don't fire immediately after a card re-render.
 let tooltipEnabledAt = 0;
 
 // --- Form helpers ---
@@ -57,6 +58,7 @@ function calcWeaknesses(types, abilityKey) {
   for (const atk of Object.keys(TC)) {
     let m = 1;
     if (am && am.special === 'wonderguard') {
+      // Wonder Guard blocks everything except super-effective hits — b > 1 passes through, all else → 0.
       let b = 1;
       for (const def of et) { const row = typeChart[def] || {}; b *= row[atk] !== undefined ? row[atk] : 1; }
       all[atk] = b > 1 ? b : 0;
@@ -99,17 +101,23 @@ function badge(type, mult, sm = false) {
   return `<span class="badge${sm ? ' sm' : ''}" style="background:${c.bg};color:${c.text};border-color:${c.bg}AA">${getLocalizedTypeName(type, currentLang)}<span class="mult">${mult}</span></span>`;
 }
 
+const WEAK_GROUPS = [
+  { key: 'w4',  cls: 'x4',      labelKey: 'weak4',   mult: '×4' },
+  { key: 'w2',  cls: 'x2',      labelKey: 'weak2',   mult: '×2' },
+];
+const RES_GROUPS = [
+  { key: 'r2',  cls: 'half',    labelKey: 'resist2', mult: '×½' },
+  { key: 'r4',  cls: 'quarter', labelKey: 'resist4', mult: '×¼' },
+  { key: 'imm', cls: 'x0',      labelKey: 'immune',  mult: '×0' },
+];
+
 function renderGroups(g, sm = false) {
-  const {w4, w2, imm, r2, r4} = g;
-  let html = '';
-  if (w4.length) html += `<div class="weakness-block"><div class="section-label x4">${t('weak4')}</div><div class="badges">${w4.map(tp => badge(tp, '×4', sm)).join('')}</div></div>`;
-  if (w2.length) html += `<div class="weakness-block"><div class="section-label x2">${t('weak2')}</div><div class="badges">${w2.map(tp => badge(tp, '×2', sm)).join('')}</div></div>`;
-  if ((w4.length || w2.length) && (imm.length || r2.length || r4.length)) html += '<hr class="divider-h">';
-  if (r2.length) html += `<div class="weakness-block"><div class="section-label half">${t('resist2')}</div><div class="badges">${r2.map(tp => badge(tp, '×½', sm)).join('')}</div></div>`;
-  if (r4.length) html += `<div class="weakness-block"><div class="section-label quarter">${t('resist4')}</div><div class="badges">${r4.map(tp => badge(tp, '×¼', sm)).join('')}</div></div>`;
-  if (imm.length) html += `<div class="weakness-block"><div class="section-label x0">${t('immune')}</div><div class="badges">${imm.map(tp => badge(tp, '×0', sm)).join('')}</div></div>`;
-  if (!html) html = `<p class="empty-hint">${t('noMatchups')}</p>`;
-  return html;
+  const renderBlock = ({key, cls, labelKey, mult}) =>
+    g[key].length ? `<div class="weakness-block"><div class="section-label ${cls}">${t(labelKey)}</div><div class="badges">${g[key].map(tp => badge(tp, mult, sm)).join('')}</div></div>` : '';
+  const weakHtml = WEAK_GROUPS.map(renderBlock).join('');
+  const resHtml  = RES_GROUPS.map(renderBlock).join('');
+  const divider  = weakHtml && resHtml ? '<hr class="divider-h">' : '';
+  return weakHtml + divider + resHtml || `<p class="empty-hint">${t('noMatchups')}</p>`;
 }
 
 function renderStats(stats) {
@@ -217,6 +225,7 @@ function buildCurrentCard(entry) {
   const ftEntries = flavorTextCache[speciesName] || [];
   const ftLang = ftEntries.filter(e => e.language.name === currentLang);
   const ftFallback = ftLang.length ? ftLang : ftEntries.filter(e => e.language.name === 'en');
+  // PokéAPI repeats the same text across multiple game versions — deduplicate, keep the latest entry.
   const seen = new Set();
   const ftUniq = ftFallback.filter(e => {
     const t = e.flavor_text.replace(/[\n\f]/g, ' ');
@@ -297,7 +306,7 @@ function buildHistoryCard(entry) {
   const abilityKey = currentAbilityOverride || (abilities ? (abilities.find(a => REL_ABILITIES[a.name]) || {}).name : null);
   const g = group(calcWeaknesses(types, abilityKey || null));
   const weakBadges = [...g.w4.map(t => badge(t, '×4', true)), ...g.w2.map(t => badge(t, '×2', true))];
-  return `<div class="poke-card is-history" onclick="bringToTop('${name}')"><div class="history-inner"><img class="poke-img-small" src="${sprite || ''}" alt="${displayName}"/><div class="history-meta"><div class="history-top"><span class="history-num">#${num}</span><span class="history-name">${displayName}</span><div class="history-types">${typePills}</div></div>${weakBadges.length ? `<div class="history-weaknesses">${weakBadges.join('')}</div>` : ''}</div></div></div>`;
+  return `<div class="poke-card is-history" onclick="lookup('${name}')"><div class="history-inner"><img class="poke-img-small" src="${sprite || ''}" alt="${displayName}"/><div class="history-meta"><div class="history-top"><span class="history-num">#${num}</span><span class="history-name">${displayName}</span><div class="history-types">${typePills}</div></div>${weakBadges.length ? `<div class="history-weaknesses">${weakBadges.join('')}</div>` : ''}</div></div></div>`;
 }
 
 // --- Evo chain ---
@@ -397,6 +406,8 @@ async function loadEvoChain(entry) {
       html = `<div class="evo-linear">${tiles}</div>`;
     }
 
+    // Look up #evo-wrap here, not at function start — renderFeed() may have replaced the card
+    // while this async function was running, so an early ref would be stale.
     const wrap = document.getElementById('evo-wrap');
     if (!wrap) return;
     wrap.innerHTML = `<div class="evo-chain"><div class="evo-label">${t('evoChain')}</div>${html}</div>`;

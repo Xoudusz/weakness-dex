@@ -40,6 +40,8 @@ const typeChart = {
   fairy     : { dragon:0, fighting:0.5, bug:0.5, dark:0.5, poison:2, steel:2 },
 };
 
+// Types that didn't exist in earlier gens. null means "treat as Normal" for damage calc purposes.
+// Fairy was added in Gen 6; Dark and Steel in Gen 2.
 const GEN_OVERRIDES = {
   1: {fairy:null, dark:null, steel:null},
   2: {fairy:null},
@@ -383,6 +385,7 @@ const UI_STRINGS = {
   },
 };
 
+// Fallback chain: currentLang → en → raw key (so untranslated keys still render something).
 function t(key) {
   return (UI_STRINGS[currentLang] || UI_STRINGS.en)[key] ?? UI_STRINGS.en[key] ?? key;
 }
