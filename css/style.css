@@ -73,7 +73,7 @@ select:focus{border-color:var(--accent);}
 
 /* Right panel */
 .hero-right{display:grid;grid-template-columns:1fr auto;min-width:0;}
-.hero-weaknesses{padding:20px;min-width:0;border-right:1px solid var(--border);}
+.hero-weaknesses{padding:20px;min-width:0;border-right:1px solid var(--border);display:flex;flex-direction:column;}
 .hero-stats{padding:20px;width:180px;flex-shrink:0;}
 .panel-label{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted2);letter-spacing:.06em;margin-bottom:14px;}
 .weakness-block{margin-bottom:12px;}
@@ -174,7 +174,7 @@ select:focus{border-color:var(--accent);}
 @keyframes spin{to{transform:rotate(360deg);}}
 .error-msg{text-align:center;color:#ff6666;font-size:13px;padding:12px 0;}
 .empty-hint{font-size:11px;color:var(--muted);font-style:italic;}
-.flavor-text{font-size:11px;color:var(--muted2);font-style:italic;margin-top:8px;line-height:1.5;text-align:center;}
+.flavor-text{font-size:11px;color:var(--muted2);font-style:italic;margin-top:auto;padding-top:14px;border-top:1px solid var(--border);line-height:1.5;}
 .footer{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--muted);margin-top:48px;text-align:center;line-height:2.2;}
 .footer a{color:var(--accent);text-decoration:none;}
 .footer a:hover{text-decoration:underline;}

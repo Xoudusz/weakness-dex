@@ -276,10 +276,9 @@ function buildCurrentCard(entry) {
           <div class="hero-types">${typePills}</div>
         </div>
         ${buildAbilitiesHtml(abilities)}
-        ${flavorHtml}
       </div>
       <div class="hero-right">
-        <div class="hero-weaknesses"><div class="panel-label">${t('weaknesses')}</div>${weaknessHtml}</div>
+        <div class="hero-weaknesses"><div class="panel-label">${t('weaknesses')}</div>${weaknessHtml}${flavorHtml}</div>
         <div class="hero-stats"><div class="panel-label">${t('baseStats')}</div>${statsHtml}</div>
       </div>
     </div>
