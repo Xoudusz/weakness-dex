@@ -12,6 +12,11 @@ Load order via `<script>` tags: `data.js` → `api.js` → `render.js` → `main
 
 **`js/data.js`** — Pure data/helpers. No DOM, no fetch.
 - `typeChart`, `TC` (type colors), `GEN_OVERRIDES`, `REL_ABILITIES` — static game data
+- `REGIONAL_EVO_CHAINS` — explicit lookup table; both regional api names (meowth-galar) and regional-exclusive species names (perrserker) map to a complete ordered chain array; trailing array element means branch point (e.g. slowpoke-galar's entry ends with `['slowbro-galar','slowking-galar']`)
+- `REGIONAL_BRANCHES` — species node → supplemental branch chains to inject into the standard evo tree (Hisuian/Alolan evolutions PokéAPI omits)
+- `PARALLEL_FORMS` — terminal evolutions from same base that are separate species but shown as form chips (e.g. persian ↔ perrserker, quagsire ↔ clodsire, cofagrigus ↔ runerigus)
+- `FORM_BASE_LABELS` — overrides the "Base" chip label for specific species (e.g. ogerpon → "Teal Mask")
+- `getRegionPrefix(name)` — returns 'Alolan'/'Galarian'/'Hisuian'/'Paldean' for regional api names, or null
 - `STAT_CONFIG`, `MOVE_TABS` — config with `statKey`/`labelKey` for i18n
 - `currentLang`, `UI_STRINGS` (7 languages × ~40 keys), `t(key)` — i18n system
 - `LANG_LABELS` — 11 entries (en/de/fr/es/it/ja/ko/zh-Hans/zh-Hant/ja-Hrkt/roomaji); dropdown populated dynamically from PokéAPI, ~7 appear in practice
@@ -20,21 +25,22 @@ Load order via `<script>` tags: `data.js` → `api.js` → `render.js` → `main
 
 **`js/api.js`** — All fetch logic and caching. No DOM.
 - In-memory caches: `spriteCache`, `localizedNamesCache`, `flavorTextCache`, `evoChainUrlCache`, `evoChainCache`, `typeNamesCache`, `abilityDescCache`, `abilityNamesCache`, `showableFormsCache`, `defaultFormCache`, `moveDataCache`
-- `loadCaches()` / `saveCaches()` — persists to `localStorage` under `wdex_apicache_v1`; species list under `wdex_species_list_v1`; lang list under `wdex_lang_list_v1`
+- `loadCaches()` / `saveCaches()` — persists to `localStorage` under `wdex_apicache_v3`; species list under `wdex_species_list_v1`; lang list under `wdex_lang_list_v1`
 - `fetchVarieties(speciesName)` — central species fetcher; early-returns only if BOTH `showableFormsCache[n]` AND `localizedNamesCache[n]` are set
 - `pokemonListReady` — promise used in `main.js` init to chain `prefetchLocalizedNames()`
 
 **`js/render.js`** — All HTML generation. No fetch (calls api functions).
+- `regionalDisplayName(apiName, speciesName, lang)` — returns "Galarian Linoone" for `apiName='linoone-galar'`; used by `buildCurrentCard`, `buildHistoryCard`, `evoMonEl`, and `openMoves` in main.js
 - `buildCurrentCard(entry)` — returns HTML string; identity block (`sprite-wrap`, `hero-num`, `hero-name`, `hero-types`) is wrapped in `.hero-identity` div; lazy trigger if `showableFormsCache`/`localizedNamesCache` missing
 - `buildHistoryCard(entry)` — returns HTML string
 - `renderGroups(g)` — renders weakness blocks in order: ×4, ×2, then resistances ×½, ×¼, ×0 (immune last)
-- `loadEvoChain(entry)` — async; always looks up `#evo-wrap` immediately before writing (never at function start) to avoid stale refs from concurrent `renderFeed()` calls
+- `loadEvoChain(entry)` — async; always looks up `#evo-wrap` immediately before writing; uses `REGIONAL_EVO_CHAINS[entry.name] || REGIONAL_EVO_CHAINS[activeForm]` as trigger for hardcoded regional path; standard chain prunes children whose chain starts with a regional form, then injects `REGIONAL_BRANCHES` supplemental nodes
 - `renderFeed()` — does a full `feed.innerHTML` replacement; called twice per lookup (immediately + after abilities load)
 
 **`js/main.js`** — App logic, search, event handlers.
 - `lookup(name)` — if a card already exists, adds `is-loading` class (border pulse, no layout shift) instead of spinner; first lookup uses spinner; on success `renderFeed()` replaces the card naturally
 - `renderFeed()` — rebuilds entire feed from `history[0]` (current) + `history.slice(1)` (history cards)
-- `localizedSearchIndex: Map<localizedLower, speciesName>` — rebuilt by `rebuildLocalizedIndex()`
+- `localizedSearchIndex: Map<localizedLower, speciesName>` — rebuilt by `rebuildLocalizedIndex()`; always includes regional display names ('galarian meowth' → 'meowth-galar') regardless of language
 - `prefetchLocalizedNames()` — background-fetches all ~1302 species in batches of 20; called on init and in `setLang()`
 - `updateStaticLabels()` — updates `data-i18n` / `data-i18n-placeholder` DOM attributes; called on init and in `setLang()`
 - History stored in `localStorage` under `wdex_h14`

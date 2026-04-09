@@ -82,6 +82,148 @@ const REL_ABILITIES = {
 };
 
 
+// PokéAPI does not populate region_id or base_form_id on evolution entries.
+// This is a known upstream issue: https://github.com/PokeAPI/pokeapi/issues/724
+// The data source (Veekun) hasn't been updated in 6+ years.
+// Complete explicit evo chains for every regional form and regional-exclusive evolution.
+// Both the regional api name (meowth-galar) AND the regional-exclusive species name (perrserker)
+// are keys, so any lookup finds the correct chain regardless of entry point.
+// Elements are strings (linear); a trailing array element means a branch point.
+const REGIONAL_EVO_CHAINS = {
+  // Alolan
+  'rattata-alola':   ['rattata-alola', 'raticate-alola'],
+  'raticate-alola':  ['rattata-alola', 'raticate-alola'],
+  'raichu-alola':    ['pichu', 'pikachu', 'raichu-alola'],
+  'sandshrew-alola': ['sandshrew-alola', 'sandslash-alola'],
+  'sandslash-alola': ['sandshrew-alola', 'sandslash-alola'],
+  'vulpix-alola':    ['vulpix-alola', 'ninetales-alola'],
+  'ninetales-alola': ['vulpix-alola', 'ninetales-alola'],
+  'diglett-alola':   ['diglett-alola', 'dugtrio-alola'],
+  'dugtrio-alola':   ['diglett-alola', 'dugtrio-alola'],
+  'meowth-alola':    ['meowth-alola', 'persian-alola'],
+  'persian-alola':   ['meowth-alola', 'persian-alola'],
+  'geodude-alola':   ['geodude-alola', 'graveler-alola', 'golem-alola'],
+  'graveler-alola':  ['geodude-alola', 'graveler-alola', 'golem-alola'],
+  'golem-alola':     ['geodude-alola', 'graveler-alola', 'golem-alola'],
+  'grimer-alola':    ['grimer-alola', 'muk-alola'],
+  'muk-alola':       ['grimer-alola', 'muk-alola'],
+  'exeggutor-alola': ['exeggcute', 'exeggutor-alola'],
+  'marowak-alola':   ['cubone', 'marowak-alola'],
+  // Galarian
+  'meowth-galar':         ['meowth-galar', 'perrserker'],
+  'perrserker':           ['meowth-galar', 'perrserker'],
+  'ponyta-galar':         ['ponyta-galar', 'rapidash-galar'],
+  'rapidash-galar':       ['ponyta-galar', 'rapidash-galar'],
+  'farfetchd-galar':      ['farfetchd-galar', 'sirfetchd'],
+  'sirfetchd':            ['farfetchd-galar', 'sirfetchd'],
+  'corsola-galar':        ['corsola-galar', 'cursola'],
+  'cursola':              ['corsola-galar', 'cursola'],
+  'zigzagoon-galar':      ['zigzagoon-galar', 'linoone-galar', 'obstagoon'],
+  'linoone-galar':        ['zigzagoon-galar', 'linoone-galar', 'obstagoon'],
+  'obstagoon':            ['zigzagoon-galar', 'linoone-galar', 'obstagoon'],
+  'mr-mime-galar':        ['mime-jr', 'mr-mime-galar', 'mr-rime'],
+  'mr-rime':              ['mime-jr', 'mr-mime-galar', 'mr-rime'],
+  'yamask-galar':         ['yamask-galar', 'runerigus'],
+  'runerigus':            ['yamask-galar', 'runerigus'],
+  'slowpoke-galar':       ['slowpoke-galar', ['slowbro-galar', 'slowking-galar']],
+  'slowbro-galar':        ['slowpoke-galar', ['slowbro-galar', 'slowking-galar']],
+  'slowking-galar':       ['slowpoke-galar', ['slowbro-galar', 'slowking-galar']],
+  'darumaka-galar':            ['darumaka-galar', 'darmanitan-galar-standard'],
+  'darmanitan-galar-standard': ['darumaka-galar', 'darmanitan-galar-standard'],
+  'darmanitan-galar-zen':      ['darumaka-galar', 'darmanitan-galar-standard'],
+  // Hisuian
+  'growlithe-hisui':  ['growlithe-hisui', 'arcanine-hisui'],
+  'arcanine-hisui':   ['growlithe-hisui', 'arcanine-hisui'],
+  'voltorb-hisui':    ['voltorb-hisui', 'electrode-hisui'],
+  'electrode-hisui':  ['voltorb-hisui', 'electrode-hisui'],
+  'qwilfish-hisui':   ['qwilfish-hisui', 'overqwil'],
+  'overqwil':         ['qwilfish-hisui', 'overqwil'],
+  'sneasel-hisui':    ['sneasel-hisui', 'sneasler'],
+  'sneasler':         ['sneasel-hisui', 'sneasler'],
+  'zorua-hisui':      ['zorua-hisui', 'zoroark-hisui'],
+  'zoroark-hisui':    ['zorua-hisui', 'zoroark-hisui'],
+  'sliggoo-hisui':    ['goomy', 'sliggoo-hisui', 'goodra-hisui'],
+  'goodra-hisui':     ['goomy', 'sliggoo-hisui', 'goodra-hisui'],
+  'wyrdeer':          ['stantler', 'wyrdeer'],
+  'kleavor':          ['scyther', 'kleavor'],
+  'ursaluna':         ['teddiursa', 'ursaring', 'ursaluna'],
+  'lilligant-hisui':  ['petilil', 'lilligant-hisui'],
+  'braviary-hisui':   ['rufflet', 'braviary-hisui'],
+  'avalugg-hisui':    ['bergmite', 'avalugg-hisui'],
+  'typhlosion-hisui': ['cyndaquil', 'quilava', 'typhlosion-hisui'],
+  'samurott-hisui':   ['oshawott', 'dewott', 'samurott-hisui'],
+  'decidueye-hisui':  ['rowlet', 'dartrix', 'decidueye-hisui'],
+  // Paldean
+  'wooper-paldea':    ['wooper-paldea', 'clodsire'],
+  'clodsire':         ['wooper-paldea', 'clodsire'],
+};
+
+// Returns the region display prefix for a PokéAPI pokemon name, or null.
+function getRegionPrefix(name) {
+  if (name.includes('-alola'))  return 'Alolan';
+  if (name.includes('-galar'))  return 'Galarian';
+  if (name.includes('-hisui'))  return 'Hisuian';
+  if (name.includes('-paldea')) return 'Paldean';
+  return null;
+}
+
+// All known regional-form Pokémon API names. Appended to allPokemon so they are searchable.
+// Not derivable from the species list endpoint (which only returns species, not variant forms).
+const REGIONAL_POKEMON = [
+  // Alolan forms
+  'rattata-alola','raticate-alola','raichu-alola','sandshrew-alola','sandslash-alola',
+  'vulpix-alola','ninetales-alola','diglett-alola','dugtrio-alola','meowth-alola',
+  'persian-alola','geodude-alola','graveler-alola','golem-alola','grimer-alola',
+  'muk-alola','exeggutor-alola','marowak-alola',
+  // Galarian forms
+  'meowth-galar','ponyta-galar','rapidash-galar','farfetchd-galar','weezing-galar',
+  'mr-mime-galar','corsola-galar','zigzagoon-galar','linoone-galar','darumaka-galar',
+  'darmanitan-galar-standard','darmanitan-galar-zen','yamask-galar','stunfisk-galar',
+  'slowpoke-galar','slowbro-galar','slowking-galar','articuno-galar','zapdos-galar',
+  'moltres-galar',
+  // Hisuian forms
+  'growlithe-hisui','arcanine-hisui','voltorb-hisui','electrode-hisui','typhlosion-hisui',
+  'qwilfish-hisui','sneasel-hisui','samurott-hisui','lilligant-hisui','zorua-hisui',
+  'zoroark-hisui','braviary-hisui','sliggoo-hisui','goodra-hisui','avalugg-hisui',
+  'decidueye-hisui',
+  // Paldean forms
+  'tauros-paldea','wooper-paldea',
+];
+
+// Species node name → supplemental branch chains to inject into the standard evo tree.
+// Each entry is an array of chains; each chain is [firstEvo, ...]. Used for Hisuian/Alolan
+// evolutions that PokéAPI doesn't include in the standard chain data.
+const REGIONAL_BRANCHES = {
+  'exeggcute': [['exeggutor-alola']],
+  'cubone':    [['marowak-alola']],
+  'koffing':   [['weezing-galar']],
+  'scyther':   [['kleavor']],
+  'stantler':  [['wyrdeer']],
+  'ursaring':  [['ursaluna']],
+  'rufflet':   [['braviary-hisui']],
+  'petilil':   [['lilligant-hisui']],
+  'bergmite':  [['avalugg-hisui']],
+  'goomy':     [['sliggoo-hisui', 'goodra-hisui']],
+  'quilava':   [['typhlosion-hisui']],
+  'dewott':    [['samurott-hisui']],
+  'dartrix':   [['decidueye-hisui']],
+};
+
+// Terminal evolutions from the same base that are separate species but linked as "parallel forms".
+const PARALLEL_FORMS = {
+  'persian':    ['perrserker'],
+  'perrserker': ['persian', 'persian-alola'],
+  'quagsire':   ['clodsire'],
+  'clodsire':   ['quagsire'],
+  'cofagrigus': ['runerigus'],
+  'runerigus':  ['cofagrigus'],
+};
+
+// Override the "Base" chip label for specific species.
+const FORM_BASE_LABELS = {
+  'ogerpon': 'Teal Mask',
+};
+
 const STAT_CONFIG = [
   {key:'hp',             statKey:'hp',    color:'#4caf50'},
   {key:'attack',         statKey:'atk',   color:'#f44336'},

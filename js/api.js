@@ -14,7 +14,7 @@ const evoChainUrlCache = {};    // speciesName → evolution_chain URL string
 const evoChainCache = {};       // chainId → chain data object
 
 // Bump the version suffix to force a full cache bust on next load (e.g. after a data shape change).
-const CACHE_LS_KEY = 'wdex_apicache_v1';
+const CACHE_LS_KEY = 'wdex_apicache_v3';
 
 const CACHE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
@@ -97,13 +97,14 @@ const SPECIES_LIST_LS_KEY = 'wdex_species_list_v1';
 async function loadPokemonList() {
   try {
     const saved = localStorage.getItem(SPECIES_LIST_LS_KEY);
-    if (saved) { allPokemon = JSON.parse(saved); return; }
+    if (saved) { allPokemon = [...JSON.parse(saved), ...REGIONAL_POKEMON]; return; }
   } catch(e) {}
   try {
     const r = await fetch('https://pokeapi.co/api/v2/pokemon-species?limit=1302');
     const d = await r.json();
-    allPokemon = d.results.map(p => p.name).filter(n => !n.endsWith('-starter'));
-    localStorage.setItem(SPECIES_LIST_LS_KEY, JSON.stringify(allPokemon));
+    const speciesList = d.results.map(p => p.name).filter(n => !n.endsWith('-starter'));
+    localStorage.setItem(SPECIES_LIST_LS_KEY, JSON.stringify(speciesList));
+    allPokemon = [...speciesList, ...REGIONAL_POKEMON];
   } catch(e) {}
 }
 const pokemonListReady = loadPokemonList();
@@ -158,8 +159,6 @@ async function fetchAbilityDesc(name, lang = currentLang) {
   }
 }
 
-const REGIONAL_SUFFIXES = ['-alola', '-galar', '-hisui', '-paldea'];
-
 async function fetchVarieties(speciesName) {
   // Both conditions must be set — if either is missing the previous fetch was partial and must re-run.
   if (showableFormsCache[speciesName] !== undefined && localizedNamesCache[speciesName] !== undefined) return showableFormsCache[speciesName];
@@ -173,9 +172,10 @@ async function fetchVarieties(speciesName) {
     if (d.flavor_text_entries) flavorTextCache[speciesName]     = d.flavor_text_entries;
     if (d.evolution_chain?.url) evoChainUrlCache[speciesName]   = d.evolution_chain.url;
 
-    // Show all non-default, non-regional varieties — cosmetic forms are never separate varieties
+    // Show all non-default varieties (includes regional forms — they are valid form chips)
+    // Exclude totem forms — they are functionally identical to base and clutter the UI.
     const showable = d.varieties
-      .filter(v => !v.is_default && !REGIONAL_SUFFIXES.some(s => v.pokemon.name.includes(s)))
+      .filter(v => !v.is_default && !v.pokemon.name.includes('totem'))
       .map(v => v.pokemon.name);
 
     showableFormsCache[speciesName] = showable;

@@ -10,7 +10,8 @@ function getHistory() {
 }
 
 function saveToHistory(e) {
-  let h = getHistory().filter(x => x.name !== e.name);
+  const key = e.activeForm || e.name;
+  let h = getHistory().filter(x => (x.activeForm || x.name) !== key);
   h.unshift(e);
   localStorage.setItem('wdex_h14', JSON.stringify(h.slice(0, 20)));
 }
@@ -52,7 +53,7 @@ function toggleShiny(name) {
 async function openMoves(pokemonName) {
   const histEntry = getHistory().find(e => e.activeForm === pokemonName || e.speciesName === pokemonName);
   const speciesKey = histEntry ? histEntry.speciesName : pokemonName;
-  const movesDisplayName = getLocalizedName(localizedNamesCache[speciesKey], currentLang) || pokemonName.replace(/-/g, ' ');
+  const movesDisplayName = regionalDisplayName(pokemonName, speciesKey, currentLang) || pokemonName.replace(/-/g, ' ');
   document.getElementById('moves-title').textContent = `${movesDisplayName} — ${t('movesBtn')}`;
   document.getElementById('moves-overlay').style.display = 'flex';
   document.getElementById('moves-tabs').innerHTML = '';
@@ -162,16 +163,31 @@ let localizedSearchIndex = new Map();
 
 function rebuildLocalizedIndex() {
   localizedSearchIndex = new Map();
-  if (currentLang === 'en') return;
-  for (const [species, names] of Object.entries(localizedNamesCache)) {
-    const localName = getLocalizedName(names, currentLang);
-    if (localName) localizedSearchIndex.set(localName.toLowerCase(), species);
+  // Species localized names (non-English only — English search uses allPokemon directly)
+  if (currentLang !== 'en') {
+    for (const [species, names] of Object.entries(localizedNamesCache)) {
+      const localName = getLocalizedName(names, currentLang);
+      if (localName) localizedSearchIndex.set(localName.toLowerCase(), species);
+    }
+  }
+  // Regional form display names (e.g. 'galarian meowth' → 'meowth-galar').
+  // Always added regardless of language since the prefix ('Galarian') is always English.
+  for (const n of allPokemon) {
+    if (!getRegionPrefix(n)) continue;
+    const speciesKey = n.replace(/-(alola|galar|hisui|paldea)(-.*)?$/, '');
+    const baseName = getLocalizedName(localizedNamesCache[speciesKey], currentLang)
+      || getLocalizedName(localizedNamesCache[speciesKey], 'en');
+    if (baseName) {
+      const prefix = getRegionPrefix(n);
+      localizedSearchIndex.set(`${prefix} ${baseName}`.toLowerCase(), n);
+    }
   }
 }
 rebuildLocalizedIndex();
 
 async function prefetchLocalizedNames() {
-  const missing = allPokemon.filter(n => !localizedNamesCache[n]);
+  // Regional forms are not species — skip them (no /pokemon-species/{name} endpoint).
+  const missing = allPokemon.filter(n => !localizedNamesCache[n] && !getRegionPrefix(n));
   if (!missing.length) return;
   const BATCH = 20;
   for (let i = 0; i < missing.length; i += BATCH) {
@@ -251,7 +267,6 @@ async function lookup(name) {
     const d = await fetchResolvedPokemon(name);
     const speciesName = d.species.name;
     const pdata = {sprite: pickSprite(d.sprites), types: d.types.map(t => t.type.name)};
-    spriteCache[speciesName] = pdata;
     spriteCache[d.name] = pdata;
     const speciesId = parseInt(d.species.url.split('/').filter(Boolean).pop());
     const entry = {
@@ -316,13 +331,12 @@ const inp = document.getElementById('inp');
 const dd = document.getElementById('dropdown');
 
 async function updateDropdown(val) {
-  // Merge localized matches (from cache) + English matches, dedup
+  // Merge localized/regional-display matches (from index) + API-name matches, dedup.
+  // Always check localizedSearchIndex — it always contains regional display names ('galarian meowth' etc.)
   const seen = new Set();
   const merged = [];
-  if (currentLang !== 'en') {
-    for (const [localLower, species] of localizedSearchIndex) {
-      if (localLower.includes(val) && !seen.has(species)) { seen.add(species); merged.push(species); }
-    }
+  for (const [localLower, species] of localizedSearchIndex) {
+    if (localLower.includes(val) && !seen.has(species)) { seen.add(species); merged.push(species); }
   }
   for (const n of allPokemon) { if (n.includes(val) && !seen.has(n)) { seen.add(n); merged.push(n); } }
   const matches = merged.slice(0, 7);
@@ -330,7 +344,7 @@ async function updateDropdown(val) {
     if (currentLang !== 'en') {
       dd.innerHTML = `<div class="dd-hint">${t('searchHint')}</div>`;
       dd.classList.add('open');
-      allPokemon.filter(n => n.includes(val)).slice(0, 3).forEach(m => {
+      allPokemon.filter(n => n.includes(val) && !getRegionPrefix(n)).slice(0, 3).forEach(m => {
         if (!localizedNamesCache[m]) fetchVarieties(m).then(() => {
           const ln = getLocalizedName(localizedNamesCache[m], currentLang);
           if (ln) localizedSearchIndex.set(ln.toLowerCase(), m);
@@ -343,7 +357,9 @@ async function updateDropdown(val) {
   }
   ddIndex = -1;
   dd.innerHTML = matches.map((m, i) => {
-    const localName = getLocalizedName(localizedNamesCache[m], currentLang) || m;
+    // For regional forms (e.g. meowth-galar) localizedNamesCache has no entry — derive display name.
+    const speciesKey = m.replace(/-(alola|galar|hisui|paldea)(-.*)?$/, '');
+    const localName = regionalDisplayName(m, speciesKey, currentLang) || m;
     const displayLower = localName.toLowerCase();
     const idx = displayLower.indexOf(val);
     const hi = idx >= 0
@@ -372,6 +388,7 @@ async function updateDropdown(val) {
   if (currentLang !== 'en') {
     matches.forEach(async (m, i) => {
       if (localizedNamesCache[m]) return;
+      if (getRegionPrefix(m)) return; // Regional forms are not species — no species endpoint to fetch
       await fetchVarieties(m);
       const localName = getLocalizedName(localizedNamesCache[m], currentLang);
       if (localName) localizedSearchIndex.set(localName.toLowerCase(), m);
