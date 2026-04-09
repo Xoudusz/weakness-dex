@@ -129,7 +129,7 @@ async function fetchFormData(name) {
     const r = await fetch(`https://pokeapi.co/api/v2/pokemon-form/${name}`);
     if (!r.ok) throw new Error();
     const d = await r.json();
-    const data = {sprite: d.sprites?.front_default || null, types: d.types.map(t => t.type.name)};
+    const data = {sprite: d.sprites?.front_default || null, shiny_sprite: d.sprites?.front_shiny || null, types: d.types.map(t => t.type.name)};
     spriteCache[name] = data;
     return data;
   } catch(e) { return null; }

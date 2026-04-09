@@ -539,7 +539,7 @@ const UI_STRINGS = {
     advancedBtn:'高級', genLabel:'世代', latestGen:'最新 (Gen 9)',
     abilityLabel:'覆蓋特性', noneOption:'— 無 —', languageLabel:'語言',
     searchHint:'無結果 — 請用英文搜尋',
-    clearHistory:'履歴を消す',
+    clearHistory:'清除歷史',
     shareBtn:'分享',
   },
   'ja-Hrkt': {

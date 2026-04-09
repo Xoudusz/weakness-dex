@@ -302,7 +302,7 @@ async function lookup(name) {
         name: speciesName, id: baseD.id, speciesName, speciesId,
         activeForm: name,
         sprite: formD.sprite,
-        shiny_sprite: null,
+        shiny_sprite: formD.shiny_sprite || null,
         types: formD.types,
         abilities: baseD.abilities.map(a => ({name: a.ability.name, is_hidden: a.is_hidden})),
         stats: baseD.stats,
@@ -354,7 +354,7 @@ async function switchForm(speciesName, formName) {
     if ((FORMS_OVERRIDE[speciesName] || []).includes(formName)) {
       const fd = await fetchFormData(formName);
       if (!fd) return;
-      h[idx] = {...h[idx], activeForm: formName, sprite: fd.sprite, shiny_sprite: null, types: fd.types, shiny: false};
+      h[idx] = {...h[idx], activeForm: formName, sprite: fd.sprite, shiny_sprite: fd.shiny_sprite || null, types: fd.types, shiny: false};
       localStorage.setItem('wdex_h14', JSON.stringify(h));
       renderFeed();
       return;
