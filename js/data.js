@@ -187,7 +187,7 @@ const REGIONAL_POKEMON = [
   'zoroark-hisui','braviary-hisui','sliggoo-hisui','goodra-hisui','avalugg-hisui',
   'decidueye-hisui',
   // Paldean forms
-  'tauros-paldea','wooper-paldea',
+  'tauros-paldea-combat-breed','wooper-paldea',
 ];
 
 // Species node name → supplemental branch chains to inject into the standard evo tree.
