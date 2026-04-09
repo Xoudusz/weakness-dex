@@ -190,6 +190,17 @@ const REGIONAL_POKEMON = [
   'tauros-paldea-combat-breed','wooper-paldea',
 ];
 
+// Species whose extra forms are on /pokemon/{name}.forms[] instead of varieties[] (PokéAPI bug).
+const FORMS_OVERRIDE = {
+  'arceus': [
+    'arceus-bug','arceus-dark','arceus-dragon','arceus-electric',
+    'arceus-fighting','arceus-fire','arceus-flying','arceus-ghost',
+    'arceus-grass','arceus-ground','arceus-ice','arceus-poison',
+    'arceus-psychic','arceus-rock','arceus-steel','arceus-water',
+    'arceus-unknown','arceus-fairy',
+  ],
+};
+
 // Species node name → supplemental branch chains to inject into the standard evo tree.
 // Each entry is an array of chains; each chain is [firstEvo, ...]. Used for Hisuian/Alolan
 // evolutions that PokéAPI doesn't include in the standard chain data.

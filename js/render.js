@@ -252,7 +252,7 @@ function buildCurrentCard(entry) {
     fetchVarieties(speciesNameForForms).then(renderFeed);
   }
   const activeForm = entry.activeForm || name;
-  const showable = showableFormsCache[speciesNameForForms] || [];
+  const showable = [...(showableFormsCache[speciesNameForForms] || []), ...(FORMS_OVERRIDE[speciesNameForForms] || [])];
   const isAlt = showable.includes(activeForm);
   let actionBarHtml = '';
 
@@ -285,10 +285,12 @@ function buildCurrentCard(entry) {
       return `<div class="form-chip" data-form-name="${p}" onclick="lookup('${p}')"><span class="form-swap">⇄</span>${pi}${pLabel}</div>`;
     }).join('');
 
-    // Lazily load sprites for form chips and parallel chips that don't have them yet
+    // Lazily load sprites for form chips and parallel chips that don't have them yet.
+    // FORMS_OVERRIDE forms (e.g. Arceus types) only exist on /pokemon-form/ — use fetchFormData.
+    const overrideForms = new Set(FORMS_OVERRIDE[speciesNameForForms] || []);
     [...(showable.length > 0 ? [speciesNameForForms] : []), ...showable, ...parallels].forEach(async f => {
       if (spriteCache[f] && spriteCache[f].sprite) return;
-      const data = await fetchPokemonData(f);
+      const data = await (overrideForms.has(f) ? fetchFormData(f) : fetchPokemonData(f));
       if (!data) return;
       document.querySelectorAll(`.form-chip[data-form-name="${f}"]`).forEach(chip => {
         if (!chip.querySelector('img') && data.sprite)

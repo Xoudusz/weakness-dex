@@ -122,6 +122,19 @@ async function fetchAllTypeNames() {
 }
 fetchAllTypeNames();
 
+// Fetches sprite+types from /pokemon-form/{name} for forms that only exist there (e.g. Arceus types).
+async function fetchFormData(name) {
+  if (spriteCache[name]) return spriteCache[name];
+  try {
+    const r = await fetch(`https://pokeapi.co/api/v2/pokemon-form/${name}`);
+    if (!r.ok) throw new Error();
+    const d = await r.json();
+    const data = {sprite: d.sprites?.front_default || null, types: d.types.map(t => t.type.name)};
+    spriteCache[name] = data;
+    return data;
+  } catch(e) { return null; }
+}
+
 // Returns {sprite, types} for dropdown previews and form chip icons.
 async function fetchPokemonData(name) {
   if (spriteCache[name]) return spriteCache[name];

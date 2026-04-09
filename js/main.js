@@ -264,22 +264,45 @@ async function lookup(name) {
   }
 
   try {
-    const d = await fetchResolvedPokemon(name);
-    const speciesName = d.species.name;
-    const pdata = {sprite: pickSprite(d.sprites), types: d.types.map(t => t.type.name)};
-    spriteCache[d.name] = pdata;
-    const speciesId = parseInt(d.species.url.split('/').filter(Boolean).pop());
-    const entry = {
-      name: speciesName, id: d.id, speciesName, speciesId,
-      activeForm: d.name,
-      sprite: pickSprite(d.sprites),
-      shiny_sprite: pickShinySprite(d.sprites),
-      types: d.types.map(t => t.type.name),
-      abilities: d.abilities.map(a => ({name: a.ability.name, is_hidden: a.is_hidden})),
-      stats: d.stats,
-      shiny: false,
-    };
+    // FORMS_OVERRIDE forms (e.g. arceus-dragon) only exist on /pokemon-form/ — fetch base
+    // pokemon for stats/abilities/id and the form endpoint for sprite/types.
+    const overrideEntry = Object.entries(FORMS_OVERRIDE).find(([, forms]) => forms.includes(name));
+    let entry;
+    if (overrideEntry) {
+      const [speciesName, ] = overrideEntry;
+      const [baseD, formD] = await Promise.all([fetchResolvedPokemon(speciesName), fetchFormData(name)]);
+      if (!formD) throw new Error();
+      spriteCache[name] = formD;
+      const speciesId = parseInt(baseD.species.url.split('/').filter(Boolean).pop());
+      entry = {
+        name: speciesName, id: baseD.id, speciesName, speciesId,
+        activeForm: name,
+        sprite: formD.sprite,
+        shiny_sprite: null,
+        types: formD.types,
+        abilities: baseD.abilities.map(a => ({name: a.ability.name, is_hidden: a.is_hidden})),
+        stats: baseD.stats,
+        shiny: false,
+      };
+    } else {
+      const d = await fetchResolvedPokemon(name);
+      const speciesName = d.species.name;
+      const pdata = {sprite: pickSprite(d.sprites), types: d.types.map(t => t.type.name)};
+      spriteCache[d.name] = pdata;
+      const speciesId = parseInt(d.species.url.split('/').filter(Boolean).pop());
+      entry = {
+        name: speciesName, id: d.id, speciesName, speciesId,
+        activeForm: d.name,
+        sprite: pickSprite(d.sprites),
+        shiny_sprite: pickShinySprite(d.sprites),
+        types: d.types.map(t => t.type.name),
+        abilities: d.abilities.map(a => ({name: a.ability.name, is_hidden: a.is_hidden})),
+        stats: d.stats,
+        shiny: false,
+      };
+    }
     // Use species name (not pokemon variant ID) so fetchVarieties works for alt forms like giratina-origin
+    const speciesName = entry.speciesName;
     await fetchVarieties(speciesName);
     saveToHistory(entry);
     if (ld) ld.remove();
@@ -300,6 +323,16 @@ async function switchForm(speciesName, formName) {
   const idx = h.findIndex(e => e.name === speciesName);
   if (idx < 0) return;
   try {
+    // Arceus type forms only exist on /pokemon-form/, not /pokemon/ — use form endpoint,
+    // keeping base stats/abilities since all type forms share them.
+    if ((FORMS_OVERRIDE[speciesName] || []).includes(formName)) {
+      const fd = await fetchFormData(formName);
+      if (!fd) return;
+      h[idx] = {...h[idx], activeForm: formName, sprite: fd.sprite, shiny_sprite: null, types: fd.types, shiny: false};
+      localStorage.setItem('wdex_h14', JSON.stringify(h));
+      renderFeed();
+      return;
+    }
     const d = await fetchResolvedPokemon(formName);
     const sprite = pickSprite(d.sprites) || (spriteCache[speciesName] || {}).sprite || null;
     const shiny_sprite = pickShinySprite(d.sprites) || (spriteCache[speciesName] || {}).shiny_sprite || null;
