@@ -303,7 +303,7 @@ function buildCurrentCard(entry) {
       });
     });
 
-    actionBarHtml = `<div class="card-action-bar"><span class="forms-label">${t('forms')}</span>${chips}<button class="moves-btn" onclick="openMoves('${activeForm}')">📋 ${t('movesBtn')}</button></div>`;
+    actionBarHtml = `<div class="card-action-bar"><span class="forms-label">${t('forms')}</span><div class="form-chips">${chips}</div><button class="moves-btn" onclick="openMoves('${activeForm}')">📋 ${t('movesBtn')}</button></div>`;
   } else {
     actionBarHtml = `<div class="card-action-bar"><button class="moves-btn" onclick="openMoves('${activeForm}')">📋 ${t('movesBtn')}</button></div>`;
   }

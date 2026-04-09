@@ -157,6 +157,28 @@ function toggleAdvanced() {
 
 function setGen(val) { currentGen = parseInt(val); renderFeed(); }
 function setAbilityOverride(val) { currentAbilityOverride = val; renderFeed(); }
+
+// --- Share ---
+
+async function shareCurrentView() {
+  const h = getHistory();
+  if (!h.length) return;
+  const entry = h[0];
+  const params = new URLSearchParams();
+  params.set('p', entry.activeForm || entry.name);
+  if (currentAbilityOverride) params.set('a', currentAbilityOverride);
+  if (currentGen) params.set('g', String(currentGen));
+  if (currentLang !== 'en') params.set('l', currentLang);
+  if (entry.shiny) params.set('s', '1');
+  const url = `${location.origin}${location.pathname}?${params}`;
+  try {
+    await navigator.clipboard.writeText(url);
+  } catch(e) {
+    prompt('Copy this link:', url);
+  }
+  const btn = document.getElementById('share-btn');
+  if (btn) { btn.textContent = '✓'; setTimeout(() => { btn.innerHTML = `🔗 <span data-i18n="shareBtn">${t('shareBtn')}</span>`; }, 2000); }
+}
 // Maps lowercased localized names → species name. Rebuilt incrementally as prefetchLocalizedNames()
 // progresses through batches, so search works before the full prefetch completes.
 let localizedSearchIndex = new Map();
@@ -246,6 +268,8 @@ async function lookup(name) {
   closeDropdown();
   document.getElementById('inp').value = '';
   document.getElementById('search-error').innerHTML = '';
+  currentAbilityOverride = '';
+  document.getElementById('ability-select').value = '';
   tooltipEnabledAt = Date.now();
   hideTooltip();
 
@@ -461,3 +485,23 @@ function closeDropdown() { dd.classList.remove('open'); ddIndex = -1; }
 updateStaticLabels();
 renderFeed();
 pokemonListReady.then(() => prefetchLocalizedNames());
+
+// Load state from shared URL params (e.g. ?p=giratina-origin&a=storm-drain)
+(function() {
+  const up = new URLSearchParams(location.search);
+  const upPokemon = up.get('p');
+  if (!upPokemon) return;
+  const upAbility = up.get('a');
+  const upGen = up.get('g');
+  const upShiny = up.get('s');
+  const upLang = up.get('l');
+  if (upLang && UI_STRINGS[upLang]) { currentLang = upLang; localStorage.setItem('wdex_lang', upLang); document.getElementById('lang-select').value = upLang; updateStaticLabels(); }
+  if (upAbility) { currentAbilityOverride = upAbility; document.getElementById('ability-select').value = upAbility; }
+  if (upGen) { currentGen = parseInt(upGen); document.getElementById('gen-select').value = upGen; }
+  lookup(upPokemon).then(() => {
+    if (upShiny) {
+      const h = getHistory();
+      if (h[0]) { h[0].shiny = true; localStorage.setItem('wdex_h14', JSON.stringify(h)); renderFeed(); }
+    }
+  });
+})();

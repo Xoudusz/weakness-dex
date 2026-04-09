@@ -340,6 +340,7 @@ const UI_STRINGS = {
     abilityLabel:'Ability override', noneOption:'— none —', languageLabel:'Language',
     searchHint:'No results — try in English',
     clearHistory:'Clear history',
+    shareBtn:'Share',
   },
   de: {
     weaknesses:'SCHWÄCHEN', baseStats:'BASISWERTE', abilities:'FÄHIGKEITEN',
@@ -364,6 +365,7 @@ const UI_STRINGS = {
     abilityLabel:'Fähigkeit', noneOption:'— keine —', languageLabel:'Sprache',
     searchHint:'Keine Treffer – auf Englisch versuchen',
     clearHistory:'Verlauf löschen',
+    shareBtn:'Teilen',
   },
   fr: {
     weaknesses:'FAIBLESSES', baseStats:'STATS DE BASE', abilities:'TALENTS',
@@ -388,6 +390,7 @@ const UI_STRINGS = {
     abilityLabel:'Remplacer talent', noneOption:'— aucun —', languageLabel:'Langue',
     searchHint:'Aucun résultat — essayer en anglais',
     clearHistory:'Effacer l\'historique',
+    shareBtn:'Partager',
   },
   es: {
     weaknesses:'DEBILIDADES', baseStats:'ESTADÍSTICAS BASE', abilities:'HABILIDADES',
@@ -412,6 +415,7 @@ const UI_STRINGS = {
     abilityLabel:'Anular hab.', noneOption:'— ninguna —', languageLabel:'Idioma',
     searchHint:'Sin resultados — prueba en inglés',
     clearHistory:'Borrar historial',
+    shareBtn:'Compartir',
   },
   it: {
     weaknesses:'DEBOLEZZE', baseStats:'STATISTICHE', abilities:'ABILITÀ',
@@ -436,6 +440,7 @@ const UI_STRINGS = {
     abilityLabel:'Forza abilità', noneOption:'— nessuna —', languageLabel:'Lingua',
     searchHint:'Nessun risultato — prova in inglese',
     clearHistory:'Cancella cronologia',
+    shareBtn:'Condividi',
   },
   ja: {
     weaknesses:'弱点', baseStats:'種族値', abilities:'特性',
@@ -460,6 +465,7 @@ const UI_STRINGS = {
     abilityLabel:'とくせい変更', noneOption:'— なし —', languageLabel:'言語',
     searchHint:'結果なし — 英語で検索してみて',
     clearHistory:'履歴を消す',
+    shareBtn:'シェア',
   },
   ko: {
     weaknesses:'약점', baseStats:'종족값', abilities:'특성',
@@ -484,6 +490,7 @@ const UI_STRINGS = {
     abilityLabel:'특성 변경', noneOption:'— 없음 —', languageLabel:'언어',
     searchHint:'결과 없음 — 영어로 검색해 보세요',
     clearHistory:'기록 지우기',
+    shareBtn:'공유',
   },
   'zh-Hans': {
     weaknesses:'弱点', baseStats:'种族值', abilities:'特性',
@@ -508,6 +515,7 @@ const UI_STRINGS = {
     abilityLabel:'覆盖特性', noneOption:'— 无 —', languageLabel:'语言',
     searchHint:'无结果 — 请用英文搜索',
     clearHistory:'清除历史',
+    shareBtn:'分享',
   },
   'zh-Hant': {
     weaknesses:'弱點', baseStats:'種族值', abilities:'特性',
@@ -532,6 +540,7 @@ const UI_STRINGS = {
     abilityLabel:'覆蓋特性', noneOption:'— 無 —', languageLabel:'語言',
     searchHint:'無結果 — 請用英文搜尋',
     clearHistory:'履歴を消す',
+    shareBtn:'分享',
   },
   'ja-Hrkt': {
     weaknesses:'じゃくてん', baseStats:'しゅぞくち', abilities:'とくせい',
@@ -556,6 +565,7 @@ const UI_STRINGS = {
     abilityLabel:'とくせいへんこう', noneOption:'— なし —', languageLabel:'げんご',
     searchHint:'けっかなし — えいごでけんさく',
     clearHistory:'りれきをけす',
+    shareBtn:'シェア',
   },
   roomaji: {
     weaknesses:'Jakuten', baseStats:'Shuzoku-chi', abilities:'Tokusei',
@@ -580,6 +590,7 @@ const UI_STRINGS = {
     abilityLabel:'Tokusei henkou', noneOption:'— nashi —', languageLabel:'Gengo',
     searchHint:'Kekka nashi — Eigo de kensaku',
     clearHistory:'Rireki wo kesu',
+    shareBtn:'Share',
   },
 };
 

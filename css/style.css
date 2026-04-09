@@ -101,15 +101,16 @@ select:focus{border-color:var(--accent);}
 .stat-total-val{font-size:12px;font-weight:600;color:var(--accent);}
 
 /* Action bar */
-.card-action-bar{border-top:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.forms-label{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted2);letter-spacing:.06em;flex-shrink:0;}
+.card-action-bar{position:relative;border-top:1px solid var(--border);padding:12px 110px 12px 20px;display:flex;align-items:flex-start;gap:10px;}
+.forms-label{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted2);letter-spacing:.06em;flex-shrink:0;padding-top:8px;}
+.form-chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
 .form-chip{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;background:var(--surface2);border:1px solid var(--border2);cursor:pointer;transition:border-color .15s,background .15s;font-size:12px;font-weight:500;text-transform:capitalize;color:var(--text);}
 .form-chip:hover{background:var(--surface3);}
 .form-chip.active{border-color:var(--accent);color:var(--accent);}
 .form-chip img{width:28px;height:28px;image-rendering:pixelated;}
 .form-chip .form-swap{font-size:10px;color:var(--muted2);margin-right:2px;}
 .battle-tag{font-size:7px;font-family:'Press Start 2P',monospace;color:var(--muted2);background:var(--surface3);border:1px solid var(--border2);border-radius:3px;padding:1px 4px;margin-left:2px;}
-.moves-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;background:var(--surface2);border:1px solid var(--border2);cursor:pointer;font-size:12px;font-weight:500;color:var(--muted2);transition:color .15s,border-color .15s;margin-left:auto;}
+.moves-btn{position:absolute;top:12px;right:20px;display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;background:var(--surface2);border:1px solid var(--border2);cursor:pointer;font-size:12px;font-weight:500;color:var(--muted2);transition:color .15s,border-color .15s;}
 .moves-btn:hover{color:var(--text);border-color:var(--border2);}
 
 /* Evo chain */
