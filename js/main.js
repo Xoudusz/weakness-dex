@@ -301,6 +301,8 @@ async function lookup(name) {
         shiny: false,
       };
     }
+    // Merge abilities for forms that are ability-only splits (e.g. Zygarde 10%/50%)
+    if (FORMS_MERGED_ABILITIES[entry.activeForm]) entry.abilities = FORMS_MERGED_ABILITIES[entry.activeForm];
     // Use species name (not pokemon variant ID) so fetchVarieties works for alt forms like giratina-origin
     const speciesName = entry.speciesName;
     await fetchVarieties(speciesName);
@@ -345,7 +347,7 @@ async function switchForm(speciesName, formName) {
       sprite,
       shiny_sprite,
       types: d.types.map(t => t.type.name),
-      abilities: d.abilities.map(a => ({name: a.ability.name, is_hidden: a.is_hidden})),
+      abilities: FORMS_MERGED_ABILITIES[d.name] || d.abilities.map(a => ({name: a.ability.name, is_hidden: a.is_hidden})),
       stats: d.stats,
       shiny: false,
     };

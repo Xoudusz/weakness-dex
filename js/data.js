@@ -178,7 +178,7 @@ const REGIONAL_POKEMON = [
   // Galarian forms
   'meowth-galar','ponyta-galar','rapidash-galar','farfetchd-galar','weezing-galar',
   'mr-mime-galar','corsola-galar','zigzagoon-galar','linoone-galar','darumaka-galar',
-  'darmanitan-galar-standard','darmanitan-galar-zen','yamask-galar','stunfisk-galar',
+  'darmanitan-galar-standard','yamask-galar','stunfisk-galar',
   'slowpoke-galar','slowbro-galar','slowking-galar','articuno-galar','zapdos-galar',
   'moltres-galar',
   // Hisuian forms
@@ -199,6 +199,27 @@ const FORMS_OVERRIDE = {
     'arceus-psychic','arceus-rock','arceus-steel','arceus-water',
     'arceus-unknown','arceus-fairy',
   ],
+  'silvally': [
+    'silvally-fighting','silvally-flying','silvally-poison','silvally-ground',
+    'silvally-rock','silvally-bug','silvally-ghost','silvally-steel',
+    'silvally-fire','silvally-water','silvally-grass','silvally-electric',
+    'silvally-psychic','silvally-ice','silvally-dragon','silvally-dark','silvally-fairy',
+  ],
+};
+
+// Forms to hide from chips — cosmetic duplicates, ability-only variants, etc.
+const FORMS_EXCLUDE = {
+  'greninja':    ['greninja-battle-bond'],
+  'zygarde':     ['zygarde-10-power-construct', 'zygarde-50-power-construct'],
+  'minior':      ['minior-orange-meteor','minior-yellow-meteor','minior-green-meteor',
+                  'minior-blue-meteor','minior-indigo-meteor','minior-violet-meteor',
+                  'minior-orange','minior-yellow','minior-green',
+                  'minior-blue','minior-indigo','minior-violet'],
+  'mimikyu':     ['mimikyu-busted'],
+  'magearna':    ['magearna-original', 'magearna-original-mega'],
+  'zarude':      ['zarude-dada'],
+  'maushold':    ['maushold-family-of-three'],
+  'dudunsparce': ['dudunsparce-three-segment'],
 };
 
 // Species node name → supplemental branch chains to inject into the standard evo tree.
@@ -233,6 +254,19 @@ const PARALLEL_FORMS = {
 // Override the "Base" chip label for specific species.
 const FORM_BASE_LABELS = {
   'ogerpon': 'Teal Mask',
+  'minior':  'Meteor',
+};
+
+// Override individual form chip labels. Flat map: apiName → display label.
+const FORM_CHIP_LABELS = {
+  'minior-red': 'Core',
+};
+
+// Merged ability lists for forms that are ability-only splits in the API.
+// When a form's activeForm matches a key here, override entry.abilities with this list.
+const FORMS_MERGED_ABILITIES = {
+  'zygarde-50': [{name:'aura-break', is_hidden:false}, {name:'power-construct', is_hidden:false}],
+  'zygarde-10': [{name:'aura-break', is_hidden:false}, {name:'power-construct', is_hidden:false}],
 };
 
 const STAT_CONFIG = [

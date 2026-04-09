@@ -252,7 +252,11 @@ function buildCurrentCard(entry) {
     fetchVarieties(speciesNameForForms).then(renderFeed);
   }
   const activeForm = entry.activeForm || name;
-  const showable = [...(showableFormsCache[speciesNameForForms] || []), ...(FORMS_OVERRIDE[speciesNameForForms] || [])];
+  const excluded = new Set(FORMS_EXCLUDE[speciesNameForForms] || []);
+  const showable = [
+    ...(showableFormsCache[speciesNameForForms] || []),
+    ...(FORMS_OVERRIDE[speciesNameForForms] || []),
+  ].filter(f => !excluded.has(f));
   const isAlt = showable.includes(activeForm);
   let actionBarHtml = '';
 
@@ -274,7 +278,8 @@ function buildCurrentCard(entry) {
       const chipOnclick = getRegionPrefix(f)
         ? `lookup('${f}')`
         : `switchForm('${speciesNameForForms}', '${f}')`;
-      return `<div class="form-chip${f === activeForm ? ' active' : ''}" data-form-name="${f}" onclick="${chipOnclick}"><span class="form-swap">⇄</span>${fi}${getFormLabel(f, speciesNameForForms)}</div>`;
+      const chipLabel = FORM_CHIP_LABELS[f] || getFormLabel(f, speciesNameForForms);
+      return `<div class="form-chip${f === activeForm ? ' active' : ''}" data-form-name="${f}" onclick="${chipOnclick}"><span class="form-swap">⇄</span>${fi}${chipLabel}</div>`;
     }).join('');
 
     // Parallel form chips (separate species, same evo stage, different regional lineage)
