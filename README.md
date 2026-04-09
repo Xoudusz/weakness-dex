@@ -48,6 +48,21 @@ docker compose up -d
 
 The GitHub Actions workflow (`.github/workflows/deploy.yml`) builds and pushes to GHCR on every push to `master`. To use it for your own fork, update the image tag in `deploy.yml` and `docker-compose.yml` to your own GHCR path.
 
+## Cloudflare Worker (share link previews)
+
+The `worker/` directory contains a Cloudflare Worker that injects dynamic Open Graph meta tags for share links, so Discord/Slack/Twitter previews show the Pokémon's name, flavor text, and artwork.
+
+Requires the domain to be proxied through Cloudflare (orange cloud).
+
+```bash
+cd worker
+npm install
+npx wrangler login   # first time only
+npx wrangler deploy
+```
+
+Update `pattern` and `zone_name` in `worker/wrangler.toml` if you're deploying to a different domain.
+
 ## Forking
 
 Feel free to fork and self-host. The project is intentionally simple — vanilla JS, no bundler, no framework. All logic lives in four files: `js/data.js`, `js/api.js`, `js/render.js`, `js/main.js`. See `CLAUDE.md` for a full architectural overview.

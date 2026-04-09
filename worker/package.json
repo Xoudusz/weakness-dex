@@ -1,0 +1,7 @@
+{
+  "name": "weakness-dex-og",
+  "private": true,
+  "dependencies": {
+    "@resvg/resvg-wasm": "^2.6.2"
+  }
+}

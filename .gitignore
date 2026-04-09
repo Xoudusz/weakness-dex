@@ -9,3 +9,8 @@
 # Editor-based HTTP Client requests
 /httpRequests/
 .idea
+
+# Worker
+worker/node_modules/
+worker/.wrangler/
+worker/dist/

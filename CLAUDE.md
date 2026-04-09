@@ -69,6 +69,7 @@ Load order via `<script>` tags: `data.js` → `api.js` → `render.js` → `main
 - **Runtime:** `docker-compose.yml` on server, `network_mode: nginx_proxy_default`
 - **Reverse proxy:** NPM — Proxy Host → `weakness-dex:80`
 - **Redeploy:** `docker compose pull && docker compose up -d` (CI builds only, does not redeploy)
+- **Cloudflare Worker:** `worker/` — injects dynamic OG meta tags for share links (`?p=`); deploy with `wrangler deploy` from that directory; set correct `pattern`/`zone_name` in `wrangler.toml` first
 
 ## License
 
