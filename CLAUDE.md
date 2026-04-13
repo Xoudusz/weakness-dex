@@ -57,6 +57,14 @@ Load order via `<script>` tags: `data.js` → `api.js` → `render.js` → `main
 
 **Card layout**: `.current-hero` is a 2-col grid (`180px 1fr`). Left col (`.hero-left`) stacks `.hero-identity` then `.hero-abilities` then flavor text. At ≤700px, `current-hero` collapses to 1 col and `.hero-left` stays column-flex (no row layout).
 
+**Action bar**: `.card-action-bar` is `position:relative; min-height:56px; padding:12px 110px 12px 20px`. The `.moves-btn` is `position:absolute; top:12px; right:20px` — the right padding and min-height exist specifically to accommodate it. Form chips (`.form-chips`) live in the flex flow on the left.
+
+**Search bar**: `.top-bar` is `display:flex; gap:10px`. `.search-wrap` is `flex:1; position:relative` and contains the `#inp` input and `.dropdown` (absolutely positioned, `left:0; right:0` relative to `.search-wrap`). At ≤700px, `.top-bar` gains `position:relative` and `.search-wrap` becomes `position:static`, so the dropdown's containing block shifts to `.top-bar` — making the dropdown span the full bar width (input + buttons) without moving buttons to a new line.
+
+**Moves modal**: `openMoves(pokemonName)` fetches `/pokemon/{pokemonName}`. If the response is non-ok or `d.moves` is empty, it falls back to `speciesKey` (base species from history). Arceus-type forms (arceus-fire etc.) 404 on the pokemon endpoint — they are form-only, not separate pokemon entries. `fetchMoveDetails` caches `{type, category, power, pp, accuracy, names, effect}` per move in `moveDataCache`. Move rows have `data-move` attribute; `attachMoveTooltips()` uses event delegation on the moves-body to show `#move-tooltip` on hover.
+
+**typeChart orientation**: `typeChart[defendingType][attackingType] = multiplier`. This is the same in both `js/data.js` (browser) and `worker/typedata.js` (Cloudflare Worker). The worker's `computeWeaknesses` iterates attacking types and looks up `typeChart[def][atk]` — same pattern as `calcWeaknesses` in `render.js:62`.
+
 ## Assets
 
 - `favicon.svg` — Pokédex-style icon (red panel, blue lens, dark body); referenced in `index.html`

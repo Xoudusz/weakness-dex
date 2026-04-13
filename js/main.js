@@ -62,7 +62,13 @@ async function openMoves(pokemonName) {
   if (!currentMovesData || currentMovesData.name !== pokemonName) {
     try {
       const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`);
-      const d = await r.json();
+      let d = r.ok ? await r.json() : null;
+      if ((!d || !d.moves.length) && speciesKey !== pokemonName) {
+        const r2 = await fetch(`https://pokeapi.co/api/v2/pokemon/${speciesKey}`);
+        d = await r2.json();
+        const baseName = regionalDisplayName(speciesKey, speciesKey, currentLang) || speciesKey.replace(/-/g, ' ');
+        document.getElementById('moves-title').textContent += ` (${baseName})`;
+      }
       const byMethod = {};
       for (const m of d.moves) {
         for (const vg of m.version_group_details) {
@@ -124,26 +130,55 @@ function renderMoveTable(tab) {
       const catCls = det.category === 'physical' ? 'physical' : det.category === 'special' ? 'special' : 'status';
       const moveName = getLocalizedName(det.names, currentLang) || m.name.replace(/-/g, ' ');
       const typeLabel = det.type ? getLocalizedTypeName(det.type, currentLang) : '—';
-      html += `<tr>${tab === 'level-up' ? `<td><span class="move-level">${m.level || '—'}</span></td>` : ''}<td style="text-transform:capitalize">${moveName}</td><td>${det.type ? `<span style="background:${mc.bg};color:${mc.text};padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600">${typeLabel}</span>` : '—'}</td><td>${det.category ? `<span class="move-cat ${catCls}">${t(catKey)}</span>` : '—'}</td><td class="move-power">${det.power || '—'}</td><td>${det.accuracy || '—'}</td><td>${det.pp || '—'}</td></tr>`;
+      html += `<tr data-move="${m.name}">${tab === 'level-up' ? `<td><span class="move-level">${m.level || '—'}</span></td>` : ''}<td style="text-transform:capitalize">${moveName}</td><td>${det.type ? `<span style="background:${mc.bg};color:${mc.text};padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600">${typeLabel}</span>` : '—'}</td><td>${det.category ? `<span class="move-cat ${catCls}">${t(catKey)}</span>` : '—'}</td><td class="move-power">${det.power || '—'}</td><td>${det.accuracy || '—'}</td><td>${det.pp || '—'}</td></tr>`;
     }
     html += '</tbody></table>';
     return html;
   }
 
   body.innerHTML = buildTable();
+  attachMoveTooltips(body);
   const uncached = filtered.filter(m => !moveDataCache[m.name]);
   if (uncached.length) {
-    Promise.all(uncached.map(m => fetchMoveDetails(m.name))).then(() => { if (currentMovesTab === tab) body.innerHTML = buildTable(); });
+    Promise.all(uncached.map(m => fetchMoveDetails(m.name))).then(() => { if (currentMovesTab === tab) { body.innerHTML = buildTable(); attachMoveTooltips(body); } });
   }
+}
+
+function attachMoveTooltips(body) {
+  const tip = document.getElementById('move-tooltip');
+  body.addEventListener('mouseover', e => {
+    const tr = e.target.closest('tr[data-move]');
+    if (!tr) return;
+    const det = moveDataCache[tr.dataset.move];
+    if (!det?.effect) return;
+    tip.textContent = det.effect;
+    tip.classList.add('visible');
+  });
+  body.addEventListener('mousemove', e => {
+    if (!tip.classList.contains('visible')) return;
+    tip.style.left = (e.clientX + 14) + 'px';
+    tip.style.top  = (e.clientY + 14) + 'px';
+  });
+  body.addEventListener('mouseout', e => {
+    if (e.target.closest('tr[data-move]') && !e.relatedTarget?.closest('tr[data-move]')) {
+      tip.classList.remove('visible');
+      tip.style.left = '-9999px';
+    }
+  });
 }
 
 function closeMoves(e) {
   const overlay = document.getElementById('moves-overlay');
-  if (!e || e.target === overlay) overlay.style.display = 'none';
+  if (!e || e.target === overlay) {
+    overlay.style.display = 'none';
+    const tip = document.getElementById('move-tooltip');
+    tip.classList.remove('visible');
+    tip.style.left = '-9999px';
+  }
 }
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') document.getElementById('moves-overlay').style.display = 'none';
+  if (e.key === 'Escape') closeMoves();
   // Press '/' or 's' anywhere to jump to search ('/' = Shift+7 on QWERTZ)
   if ((e.key === '/' || e.key === 's') && document.activeElement !== inp && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); inp.focus(); }
 });

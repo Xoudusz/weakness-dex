@@ -204,7 +204,7 @@ async function fetchMoveDetails(moveName) {
   try {
     const r = await fetch(`https://pokeapi.co/api/v2/move/${moveName}`);
     const d = await r.json();
-    const data = {type: d.type.name, category: d.damage_class.name, power: d.power, pp: d.pp, accuracy: d.accuracy, names: d.names || []};
+    const data = {type: d.type.name, category: d.damage_class.name, power: d.power, pp: d.pp, accuracy: d.accuracy, names: d.names || [], effect: d.effect_entries.find(e => e.language.name === 'en')?.short_effect?.replace(/\$effect_chance/g, d.effect_chance ?? '') || ''};
     moveDataCache[moveName] = data;
     return data;
   } catch(e) { return null; }
