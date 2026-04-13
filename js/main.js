@@ -2,6 +2,20 @@ let ddIndex = -1, debounceTimer;
 let currentGen = 0, currentAbilityOverride = '';
 let currentMovesData = null, currentMovesTab = 'level-up', currentAvailableTabs = [];
 
+// --- Theme ---
+
+if (localStorage.getItem('wdex_theme') === 'light') {
+  document.documentElement.classList.add('light');
+  document.getElementById('theme-toggle').textContent = '🌙';
+}
+
+function toggleTheme() {
+  const isLight = document.documentElement.classList.toggle('light');
+  localStorage.setItem('wdex_theme', isLight ? 'light' : 'dark');
+  document.getElementById('theme-toggle').textContent = isLight ? '🌙' : '☀️';
+  document.querySelector('meta[name="theme-color"]').content = isLight ? '#f5f5f7' : '#0d0d0f';
+}
+
 // --- History ---
 
 // Versioned key — increment the number to clear history saved with an incompatible shape.
