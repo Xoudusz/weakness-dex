@@ -9,11 +9,18 @@ A fast Pokémon type weakness lookup tool. Search any Pokémon by name, see its 
 - Type weakness/resistance/immunity chart for all 18 types
 - Supports all generations (Gen 1–9) with correct historical type charts
 - Ability override (Levitate, Wonder Guard, etc.) affects the chart in real time
-- Evolution chain with sprites
+- Shiny sprite toggle
+- Regional form switching — Alolan, Galarian, Hisuian, Paldean variants shown as chips
+- Base stat display with colored bars (Gen 1 uses single Special stat)
+- Ability descriptions on hover; relevant abilities visually highlighted
+- Evolution chain with sprites and branching paths
 - Move list with tabs (level-up, TM, egg, tutor)
+- Shareable URLs — the Share button copies a link encoding the current Pokémon, generation, ability, language, and shiny state
 - Localized search and UI in 7 languages (EN, DE, FR, ES, IT, JA, KO)
+- Keyboard shortcut: press `/` or `s` to focus the search box
 - Lookup history
 - All PokéAPI responses cached in `localStorage` — fast after the first load
+- Installable as a PWA
 
 ## Running locally
 
@@ -50,7 +57,7 @@ The GitHub Actions workflow (`.github/workflows/deploy.yml`) builds and pushes t
 
 ## Cloudflare Worker (share link previews)
 
-The `worker/` directory contains a Cloudflare Worker that injects dynamic Open Graph meta tags for share links, so Discord/Slack/Twitter previews show the Pokémon's name, flavor text, and artwork.
+The `worker/` directory contains a Cloudflare Worker that generates dynamic Open Graph previews for share links. For `?p=` links it injects the Pokémon's name, weaknesses, abilities, and BST as the description and generates a custom 1200×630 PNG card with the official artwork. The homepage also gets a branded splash card showing all 18 type badges.
 
 Requires the domain to be proxied through Cloudflare (orange cloud).
 
