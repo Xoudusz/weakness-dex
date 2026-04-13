@@ -433,6 +433,15 @@ async function updateDropdown(val) {
     if (localLower.includes(val) && !seen.has(species)) { seen.add(species); merged.push(species); }
   }
   for (const n of allPokemon) { if (n.includes(val) && !seen.has(n)) { seen.add(n); merged.push(n); } }
+  merged.sort((a, b) => {
+    const skA = a.replace(/-(alola|galar|hisui|paldea)(-.*)?$/, '');
+    const skB = b.replace(/-(alola|galar|hisui|paldea)(-.*)?$/, '');
+    const dnA = (regionalDisplayName(a, skA, currentLang) || a).toLowerCase();
+    const dnB = (regionalDisplayName(b, skB, currentLang) || b).toLowerCase();
+    const prA = (getRegionPrefix(a) !== null ? 2 : 0) + (dnA.startsWith(val) ? 0 : 1);
+    const prB = (getRegionPrefix(b) !== null ? 2 : 0) + (dnB.startsWith(val) ? 0 : 1);
+    return prA - prB;
+  });
   const matches = merged.slice(0, 7);
   if (!matches.length) {
     if (currentLang !== 'en') {
