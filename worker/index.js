@@ -85,15 +85,12 @@ export default {
         `<meta property="og:description" content="${esc(desc)}">`
       )
       .replace(
-        `<meta name="twitter:card" content="summary_large_image">`,
-        [
-          `<meta name="twitter:card" content="summary_large_image">`,
-          `<meta property="og:image" content="${esc(imageUrl)}">`,
-          `<meta property="og:url" content="${esc(url.toString())}">`,
-          `<meta name="twitter:image" content="${esc(imageUrl)}">`,
-          `<meta name="twitter:title" content="${esc(title)}">`,
-          `<meta name="twitter:description" content="${esc(desc)}">`,
-        ].join('\n')
+        `<meta property="og:image" content="https://weakness-dex.hyvitech.org/?ogimg=1">`,
+        `<meta property="og:image" content="${esc(imageUrl)}">\n<meta property="og:url" content="${esc(url.toString())}">`
+      )
+      .replace(
+        `<meta name="twitter:image" content="https://weakness-dex.hyvitech.org/?ogimg=1">`,
+        `<meta name="twitter:image" content="${esc(imageUrl)}">\n<meta name="twitter:title" content="${esc(title)}">\n<meta name="twitter:description" content="${esc(desc)}">`
       );
 
     return new Response(injected, { status: originRes.status, headers: buildHeaders(originRes) });
