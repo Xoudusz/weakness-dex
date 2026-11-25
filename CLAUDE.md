@@ -43,3 +43,6 @@ Cloudflare Worker (separate deploy):
 ```bash
 cd worker && npx wrangler deploy
 ```
+
+## Env
+- `IMPRESSUM_ENABLED` (default on): Austrian Impressum link + page; only `false` disables. Read at runtime, never bake into the build.
