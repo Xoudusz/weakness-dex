@@ -26,3 +26,9 @@ test('advanced panel toggles', async ({ page }) => {
   await page.locator('#adv-btn').click()
   await expect(panel).toBeVisible()
 })
+
+test('impressum link opens the legal notice', async ({ page }) => {
+  await page.goto('/')
+  await page.locator('#impressum-link').click()
+  await expect(page.locator('#impressum-owner')).toHaveText('David Tinhofer, Wien')
+})

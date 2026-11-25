@@ -4,3 +4,5 @@ services:
     container_name: weakness-dex
     restart: unless-stopped
     network_mode: nginx_proxy_default
+    environment:
+      IMPRESSUM_ENABLED: "${IMPRESSUM_ENABLED:-true}"
